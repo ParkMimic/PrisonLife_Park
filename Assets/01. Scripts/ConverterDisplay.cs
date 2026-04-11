@@ -9,23 +9,28 @@ public class ConverterDisplay : MonoBehaviour
     public float columnOffset = 0.4f;
     public float rowHeight = 0.4f;
 
+    [Header("광물 회전 설정")]
+    public Vector3 mineralRotation = new Vector3(0f, 0f, 90f);
+
     private List<GameObject> displayItems = new List<GameObject>();
 
-    public void AddMineral()
+    // 다음 착지 위치 반환
+    public Vector3 GetNextPosition()
     {
         int index = displayItems.Count;
         int col = index % 2;
         int row = index / 2;
 
-        float xOffset = (col == 0) ? -columnOffset : columnOffset;
+        float zOffset = (col == 0) ? -columnOffset : columnOffset;
         float yOffset = row * rowHeight;
 
-        Vector3 targetPos = displayBase.position
-            + new Vector3(xOffset, yOffset, 0f);
+        return displayBase.position + new Vector3(0f, yOffset, zOffset);
+    }
 
-        GameObject obj = Instantiate(
-            mineralDisplayPrefab, targetPos, Quaternion.identity);
-
+    // 날아온 오브젝트를 그대로 등록
+    public void AddMineral(GameObject obj)
+    {
+        obj.transform.rotation = Quaternion.Euler(mineralRotation); 
         displayItems.Add(obj);
     }
 

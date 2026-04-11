@@ -2611,8 +2611,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   resultPrefab: {fileID: 5649612337963897685, guid: 3fd6b801ec1a34d488a49c032dcb8c40, type: 3}
-  mineralsPerResult: 2
   resultSpawnPoint: {fileID: 1245259460}
+  mineralsPerResult: 2
+  convertInterval: 1
+  resultStackHeight: 0.5
 --- !u!114 &443285094
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2627,8 +2629,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mineralDisplayPrefab: {fileID: 966607810235432403, guid: 035c2f4c68ff35d4c81d9b49f651d589, type: 3}
   displayBase: {fileID: 1085823532}
-  columnOffset: 0.4
-  rowHeight: 0.4
+  columnOffset: 0.2
+  rowHeight: 0.2
+  mineralRotation: {x: 0, y: 0, z: 90}
 --- !u!4 &443285095
 Transform:
   m_ObjectHideFlags: 0
@@ -2800,6 +2803,7 @@ GameObject:
   m_Component:
   - component: {fileID: 547143365}
   - component: {fileID: 547143366}
+  - component: {fileID: 547143367}
   m_Layer: 5
   m_Name: Checker
   m_TagString: Untagged
@@ -2847,6 +2851,18 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 100, y: 100, z: 20}
   m_Center: {x: 0, y: 0, z: -10}
+--- !u!114 &547143367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 547143364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1119a20954a5f5d478535dfe8660c5fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &630389914
 GameObject:
   m_ObjectHideFlags: 0
@@ -7679,7 +7695,8 @@ MonoBehaviour:
   stackOffset: {x: 0, y: -0.6, z: -1}
   itemHeight: 0.17
   followSpeed: 10
-  itemRotation: {x: 0, y: 0, z: 90}
+  mineralRotation: {x: 0, y: 0, z: 90}
+  resultRotation: {x: 0, y: 0, z: 0}
   maxItemCount: 40
 --- !u!114 &1857267184
 MonoBehaviour:

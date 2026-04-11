@@ -1,68 +1,107 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class ItemChain : MonoBehaviour
 {
     [Header("스택 설정")]
-    public Vector3 stackOffset = new Vector3(0f, 0f, -1f); // 플레이어 뒤 위치
-    public float itemHeight = 0.5f; // 아이템 간 높이 간격
-    public float followSpeed = 10f; // 스택 따라오는 속도
+    public Vector3 stackOffset = new Vector3(0f, 0f, -1f);
+    public float itemHeight = 0.5f;
+    public float followSpeed = 10f;
 
-    [Header("아이템 회전 설정")]
-    public Vector3 itemRotation = new Vector3(0f, 0f, 90f);
+    [Header("아이템 타입별 회전 설정")]
+    public Vector3 mineralRotation = new Vector3(90f, 0f, 0f);  // 광물 회전
+    public Vector3 resultRotation = new Vector3(0f, 0f, 0f);   // 결과물 회전
 
     [Header("최대 보유량")]
-    public int maxItemCount = 40;
+    public int maxItemCount = 10;
 
-    private List<MineralItem> chain = new List<MineralItem>();
+    private List<Component> chain = new List<Component>();
 
-    private void Update()
+    void Update()
     {
         if (chain.Count == 0) return;
 
-        // 플레이어 뒤 기준 위치 계산 (플레이어 회전 반영)
-        Vector3 stackBasePosition = transform.position + transform.TransformDirection(stackOffset);
+        Vector3 stackBasePosition = transform.position
+            + transform.TransformDirection(stackOffset);
 
-        // 모든 아이템을 높이 순서대로 배치
         for (int i = 0; i < chain.Count; i++)
         {
-            Vector3 targetPos = stackBasePosition + Vector3.up * (itemHeight * i);
+            Transform itemTransform = chain[i].transform;
 
-            // 위치 + 회전 동시 적용
-            chain[i].transform.position = Vector3.Lerp(
-                chain[i].transform.position,
+            Vector3 targetPos = stackBasePosition
+                + Vector3.up * (itemHeight * i);
+
+            itemTransform.position = Vector3.Lerp(
+                itemTransform.position,
                 targetPos,
-                followSpeed * Time.deltaTime);
+                followSpeed * Time.deltaTime
+            );
 
-            chain[i].transform.rotation = Quaternion.Euler(itemRotation);
+            //  타입에 따라 회전값 분리 적용
+            if (chain[i] is MineralItem)
+                itemTransform.rotation = Quaternion.Euler(mineralRotation);
+            else
+                itemTransform.rotation = Quaternion.Euler(resultRotation);
         }
     }
 
     public bool IsFull() => chain.Count >= maxItemCount;
 
-    // 새 아이템 등록 -> 따라갈 target 반환
+    public Vector3 GetNextStackPosition()
+    {
+        int index = chain.Count;
+        Vector3 stackBasePosition = transform.position
+            + transform.TransformDirection(stackOffset);
+        return stackBasePosition + Vector3.up * (itemHeight * index);
+    }
+
     public bool AddItem(MineralItem item)
     {
         if (IsFull())
         {
-            Debug.Log("최대 보유량 도달!");
-            Destroy(item.gameObject); // 아이템 파괴
+            Destroy(item.gameObject);
             return false;
         }
         chain.Add(item);
-        return true; // 플레이어의 transform 반환
+        return true;
     }
 
-    // 아이템 소비 (창고 납품 등)
+    public bool AddResultItem(ResultItem item)
+    {
+        if (IsFull())
+        {
+            Debug.Log("[ItemChain] 최대 보유량 도달!");
+            return false;
+        }
+        chain.Add(item);
+        return true;
+    }
+
     public MineralItem PopItem()
     {
-        if (chain.Count == 0) return null;
-        MineralItem last = chain[chain.Count - 1];
-        chain.RemoveAt(chain.Count - 1);
-        return last;
+        for (int i = chain.Count - 1; i >= 0; i--)
+        {
+            if (chain[i] is MineralItem mineral)
+            {
+                chain.RemoveAt(i);
+                return mineral;
+            }
+        }
+        return null;
     }
 
-    // 현재 보유 수량 UI 등에 활용
+    public ResultItem PopResultItem()
+    {
+        for (int i = chain.Count - 1; i >= 0; i--)
+        {
+            if (chain[i] is ResultItem result)
+            {
+                chain.RemoveAt(i);
+                return result;
+            }
+        }
+        return null;
+    }
+
     public int GetCount() => chain.Count;
 }

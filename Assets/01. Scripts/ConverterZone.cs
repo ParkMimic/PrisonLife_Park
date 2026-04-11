@@ -22,6 +22,11 @@ public class ConverterZone : MonoBehaviour
         itemChain = other.GetComponent<ItemChain>();
         if (itemChain == null || itemChain.GetCount() == 0) return; // 아이템 체인이 없거나 비어있으면 무시
 
+        if (display == null || processor == null)
+        {
+            Debug.LogError("[ConverterZone] display 또는 processor가 null이에요!");
+            return;
+        }
         StartCoroutine(InsertRoutine());
     }
 
@@ -44,14 +49,15 @@ public class ConverterZone : MonoBehaviour
             MineralItem item = itemChain.PopItem(); // 아이템 체인에서 하나 꺼내기
             if (item == null) break;
 
-            // 아이템 오브젝트 비활성화 (발판 위 디스플레이로 표현)
-            Destroy(item.gameObject);
+            // 착지할 목표 위치 계산
+            Vector3 targetPos = display.GetNextPosition();
 
-            // 발판 디스플레이에 추가
-            display.AddMineral();
-
-            // 변환 처리
-            processor.OnMineralInserted();
+            // 날아가서 착지 후 디스플레이에 등록
+            item.FlyTo(targetPos, () =>
+            {
+                display.AddMineral(item.gameObject); // 착지한 오브젝트 등록
+                processor.OnMineralInserted(); // 변환 처리
+            });
 
             yield return new WaitForSeconds(insertInterval); // 다음 아이템 투입까지 대기
         }
