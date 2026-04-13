@@ -9,50 +9,70 @@ public class ItemChain : MonoBehaviour
     public float followSpeed = 10f;
 
     [Header("아이템 타입별 회전 설정")]
-    public Vector3 mineralRotation = new Vector3(90f, 0f, 0f);  // 광물 회전
-    public Vector3 resultRotation = new Vector3(0f, 0f, 0f);   // 결과물 회전
+    public Vector3 mineralRotation = new Vector3(90f, 0f, 0f);
+    public Vector3 resultRotation = new Vector3(0f, 0f, 0f);
+
+    [Header("그룹 간 간격")]
+    public float groupOffset = 1.5f;  // 그룹 사이 Z축 간격
 
     [Header("최대 보유량")]
     public int maxItemCount = 10;
 
-    private List<Component> chain = new List<Component>();
+    private List<MineralItem> mineralChain = new List<MineralItem>();
+    private List<ResultItem> resultChain = new List<ResultItem>();
+    private List<string> groupOrder = new List<string>();
+
+    public int GetResultCount() => resultChain.Count;
 
     void Update()
     {
-        if (chain.Count == 0) return;
+        if (GetCount() == 0) return;
 
-        Vector3 stackBasePosition = transform.position
+        // 첫 번째 그룹 시작 위치
+        Vector3 currentBase = transform.position
             + transform.TransformDirection(stackOffset);
 
-        for (int i = 0; i < chain.Count; i++)
+        foreach (string group in groupOrder)
         {
-            Transform itemTransform = chain[i].transform;
+            if (group == "mineral")
+                currentBase = UpdateGroup(mineralChain, currentBase, mineralRotation);
+            else if (group == "result")
+                currentBase = UpdateGroup(resultChain, currentBase, resultRotation);
+        }
+    }
 
-            Vector3 targetPos = stackBasePosition
-                + Vector3.up * (itemHeight * i);
+    Vector3 UpdateGroup<T>(List<T> group, Vector3 basePos, Vector3 rotation)
+        where T : Component
+    {
+        for (int i = 0; i < group.Count; i++)
+        {
+            // Y축으로 쌓기
+            Vector3 targetPos = basePos + Vector3.up * (itemHeight * i);
 
-            itemTransform.position = Vector3.Lerp(
-                itemTransform.position,
+            group[i].transform.position = Vector3.Lerp(
+                group[i].transform.position,
                 targetPos,
                 followSpeed * Time.deltaTime
             );
 
-            //  타입에 따라 회전값 분리 적용
-            if (chain[i] is MineralItem)
-                itemTransform.rotation = Quaternion.Euler(mineralRotation);
-            else
-                itemTransform.rotation = Quaternion.Euler(resultRotation);
+            group[i].transform.rotation = Quaternion.Euler(rotation);
         }
+
+        // 다음 그룹은 Z축으로 뒤에 배치
+        return basePos + transform.TransformDirection(
+            new Vector3(0f, 0f, -groupOffset));
     }
 
-    public bool IsFull() => chain.Count >= maxItemCount;
+    public bool IsFull() => GetCount() >= maxItemCount;
+
+    public int GetCount() => mineralChain.Count + resultChain.Count;
 
     public Vector3 GetNextStackPosition()
     {
-        int index = chain.Count;
-        Vector3 stackBasePosition = transform.position
+        // 현재 해당 타입 그룹의 다음 위치 반환
+        Vector3 stackBase = transform.position
             + transform.TransformDirection(stackOffset);
-        return stackBasePosition + Vector3.up * (itemHeight * index);
+        return stackBase + Vector3.up * (itemHeight * GetCount());
     }
 
     public bool AddItem(MineralItem item)
@@ -62,7 +82,11 @@ public class ItemChain : MonoBehaviour
             Destroy(item.gameObject);
             return false;
         }
-        chain.Add(item);
+
+        if (mineralChain.Count == 0)
+            groupOrder.Add("mineral");
+
+        mineralChain.Add(item);
         return true;
     }
 
@@ -73,35 +97,39 @@ public class ItemChain : MonoBehaviour
             Debug.Log("[ItemChain] 최대 보유량 도달!");
             return false;
         }
-        chain.Add(item);
+
+        if (resultChain.Count == 0)
+            groupOrder.Add("result");
+
+        resultChain.Add(item);
         return true;
     }
 
     public MineralItem PopItem()
     {
-        for (int i = chain.Count - 1; i >= 0; i--)
-        {
-            if (chain[i] is MineralItem mineral)
-            {
-                chain.RemoveAt(i);
-                return mineral;
-            }
-        }
-        return null;
+        if (mineralChain.Count == 0) return null;
+
+        int lastIndex = mineralChain.Count - 1;
+        MineralItem item = mineralChain[lastIndex];
+        mineralChain.RemoveAt(lastIndex);
+
+        if (mineralChain.Count == 0)
+            groupOrder.Remove("mineral");
+
+        return item;
     }
 
     public ResultItem PopResultItem()
     {
-        for (int i = chain.Count - 1; i >= 0; i--)
-        {
-            if (chain[i] is ResultItem result)
-            {
-                chain.RemoveAt(i);
-                return result;
-            }
-        }
-        return null;
-    }
+        if (resultChain.Count == 0) return null;
 
-    public int GetCount() => chain.Count;
+        int lastIndex = resultChain.Count - 1;
+        ResultItem item = resultChain[lastIndex];
+        resultChain.RemoveAt(lastIndex);
+
+        if (resultChain.Count == 0)
+            groupOrder.Remove("result");
+
+        return item;
+    }
 }

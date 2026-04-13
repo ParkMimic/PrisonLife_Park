@@ -1,88 +1,113 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
 
 public class ConverterProcessor : MonoBehaviour
 {
-    [Header("변환 설정")]
-    public GameObject resultPrefab; // 변환 결과 프리팹
-    public Transform resultSpawnPoint; // 결과물 생성 위치
-    public int mineralsPerResult = 2; // 광물 몇 개당 결과물 1개
-    public float convertInterval = 1.0f; // 변환 간격
+    public enum InputType { Mineral, ResultItem }
+    public enum OutputType { SpawnPrefab, SatisfyCustomer }
 
-    [Header("결과물 스택 설정")]
-    public float resultStackHeight = 0.5f; // 결과물 간 높이 간격
+    [Header("프로세서 설정")]
+    public InputType inputType = InputType.Mineral;
+    public OutputType outputType = OutputType.SpawnPrefab;
+    public int itemsRequired = 2;       // 몇 개 투입당 결과 1개
+    public float convertInterval = 1.0f;   // 변환 간격
 
-    private ConverterDisplay display;
+    [Header("SpawnPrefab 설정")]
+    public GameObject resultPrefab;
+    public Transform resultSpawnPoint;
+    public float resultStackHeight = 0.5f;
 
-    private int storedCount = 0; // 현재 저장된 광물 개수
-    private bool isConverting = false; // 변환 중 여부
-    private int resultCount = 0; // 생성된 결과물 개수
+    [Header("SatisfyCustomer 설정")]
+    public CustomerSpawner customerSpawner;
 
-    private void Awake()
+    [Header("참조 - Inspector에서 직접 연결")]
+    public ConverterDisplay display;
+
+    private int storedCount = 0;
+    private int resultCount = 0;
+    private bool isConverting = false;
+
+    void Start()
     {
-        display = GetComponent<ConverterDisplay>();
+        if (display == null)
+            Debug.LogError("[Processor] display가 연결되지 않았어요!");
+
+        if (outputType == OutputType.SpawnPrefab)
+        {
+            if (resultPrefab == null)
+                Debug.LogError("[Processor] resultPrefab이 null이에요!");
+            if (resultSpawnPoint == null)
+                Debug.LogError("[Processor] resultSpawnPoint가 null이에요!");
+        }
+
+        if (outputType == OutputType.SatisfyCustomer)
+        {
+            if (customerSpawner == null)
+                Debug.LogError("[Processor] customerSpawner가 연결되지 않았어요!");
+        }
     }
 
-    public void OnMineralInserted()
+    public void OnItemInserted()
     {
         storedCount++;
-        Debug.Log($"[Processor] 광물 투입됨 / 누적 : {storedCount}개");
 
-        if (storedCount >= mineralsPerResult && !isConverting)
-        {
-            Debug.Log("[Processor] 변환 시작!");
+        if (storedCount >= itemsRequired && !isConverting)
             StartCoroutine(ConvertRoutine());
-        }
-    }
-
-    public void StartConvert()
-    {
-        Debug.Log("[Processor] 변환 시작!");
-        // 변환 중이 아니면 변환 시작
-        if (!isConverting)
-        {
-            StartCoroutine(ConvertRoutine());
-        }
     }
 
     IEnumerator ConvertRoutine()
     {
         isConverting = true;
 
-        Debug.Log($"[Processor] ConvertRoutine 진입! storedCount : {storedCount}, mineralsPerResult : {mineralsPerResult}");
-
-        // 일정 개수마다 결과물 생성
-        while (storedCount >= mineralsPerResult)
+        while (storedCount >= itemsRequired)
         {
-            Debug.Log($"[Processor] 변환 대기중... 현재 : {storedCount}개");
-            // 변환 간격 대기
             yield return new WaitForSeconds(convertInterval);
 
-            // 광물 소모
-            storedCount -= mineralsPerResult;
+            storedCount -= itemsRequired;
+            display?.RemoveMineral(itemsRequired);
 
-            // 디스플레이에서 소모된 만큼 제거
-            display.RemoveMineral(mineralsPerResult);
-
-            if (resultPrefab != null)
+            // outputType에 따라 결과 처리
+            switch (outputType)
             {
-                // 생성될 때마다 높이를 올려서 배치
-                Vector3 spawnPos = resultSpawnPoint.position + Vector3.up * (resultStackHeight * resultCount);
+                case OutputType.SpawnPrefab:
+                    SpawnResult();
+                    break;
 
-                Debug.Log($"[Processor] 생성 위치 : {spawnPos}, resultCount : {resultCount}");
-                Instantiate(resultPrefab, resultSpawnPoint.position, Quaternion.identity);
-                resultCount++;
-
-                Debug.Log($"[Processor] 결과물 생성! 현재 {resultCount}개");
+                case OutputType.SatisfyCustomer:
+                    SatisfyCustomer();
+                    break;
             }
         }
 
-        Debug.Log("[Processor] 변환 종료!");
         isConverting = false;
     }
 
-    // 플레이어가 결과물을 픽업할 때마다 호출
+    void SpawnResult()
+    {
+        if (resultPrefab == null || resultSpawnPoint == null) return;
+
+        Vector3 spawnPos = resultSpawnPoint.position
+            + Vector3.up * (resultStackHeight * resultCount);
+
+        Instantiate(resultPrefab, spawnPos, Quaternion.identity);
+        resultCount++;
+
+        Debug.Log($"[Processor] 결과물 생성! {resultCount}개");
+    }
+
+    void SatisfyCustomer()
+    {
+        Customer customer = customerSpawner?.GetFirstCustomer();
+        if (customer == null)
+        {
+            Debug.Log("[Processor] 대기 중인 손님이 없어요!");
+            return;
+        }
+
+        customer.Satisfy();
+        Debug.Log("[Processor] 손님 만족!");
+    }
+
     public void OnResultPickedUp()
     {
         if (resultCount > 0)

@@ -37,10 +37,10 @@ public class ConverterDisplay : MonoBehaviour
     //  위에서부터 count개 제거
     public void RemoveMineral(int count)
     {
-        for (int i = 0; i < count; i++)
-        {
-            if (displayItems.Count == 0) break;
+        int removeCount = Mathf.Min(count, displayItems.Count);
 
+        for (int i = 0; i < removeCount; i++)
+        {
             int lastIndex = displayItems.Count - 1;
             Destroy(displayItems[lastIndex]);
             displayItems.RemoveAt(lastIndex);

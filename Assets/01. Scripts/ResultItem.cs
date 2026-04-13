@@ -35,15 +35,37 @@ public class ResultItem : MonoBehaviour
 
         isInitialized = true;
 
-        //  픽업 시 Processor에 카운트 감소 알림
-        ConverterProcessor processor = FindFirstObjectByType<ConverterProcessor>();
-        processor?.OnResultPickedUp();
-
-        //  현재 스택 개수 기준으로 바로 뒤에 배치
         Vector3 targetPos = chain.GetNextStackPosition();
-        chain.AddResultItem(this);  //  먼저 등록 후 날아가기
-
+        chain.AddResultItem(this);
         StartCoroutine(FlyRoutine(targetPos));
+    }
+
+    // ConverterZone에서 호출하는 FlyTo 추가
+    public void FlyTo(Vector3 targetPos, System.Action onComplete)
+    {
+        isInitialized = false;
+        StartCoroutine(FlyToRoutine(targetPos, onComplete));
+    }
+
+    IEnumerator FlyToRoutine(Vector3 targetPos, System.Action onComplete)
+    {
+        Vector3 startPos = transform.position;
+        float elapsed = 0f;
+
+        while (elapsed < flyDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / flyDuration;
+
+            Vector3 linearPos = Vector3.Lerp(startPos, targetPos, t);
+            float arc = arcHeight * Mathf.Sin(Mathf.PI * t);
+            transform.position = linearPos + Vector3.up * arc;
+
+            yield return null;
+        }
+
+        transform.position = targetPos;
+        onComplete?.Invoke();
     }
 
     IEnumerator FlyRoutine(Vector3 targetPos)
@@ -60,11 +82,9 @@ public class ResultItem : MonoBehaviour
             float arc = arcHeight * Mathf.Sin(Mathf.PI * t);
             transform.position = linearPos + Vector3.up * arc;
 
-            transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, 360f * t));
-
             yield return null;
         }
 
-        //  착지 후 ItemChain Update가 자동으로 위치 관리
+        transform.position = targetPos;
     }
 }
