@@ -25,8 +25,9 @@ public class ItemChain : MonoBehaviour
 
     private List<string> groupOrder = new List<string>();
 
-    public int GetResultCount() => resultChain.Count;
-    public int GetMoneyCount() => moneyChain.Count;
+    public int GetMineralCount() => mineralChain.Count;
+    public int GetResultCount()  => resultChain.Count;
+    public int GetMoneyCount()   => moneyChain.Count;
 
     void Update()
     {
@@ -152,6 +153,7 @@ public bool IsFull() => GetCount() >= maxItemCount;
         int lastIndex = mineralChain.Count - 1;
         MineralItem item = mineralChain[lastIndex];
         mineralChain.RemoveAt(lastIndex);
+        GameManager.instance.RemoveMineral();
 
         if (mineralChain.Count == 0)
             groupOrder.Remove("mineral");
@@ -166,6 +168,7 @@ public bool IsFull() => GetCount() >= maxItemCount;
         int lastIndex = resultChain.Count - 1;
         ResultItem item = resultChain[lastIndex];
         resultChain.RemoveAt(lastIndex);
+        GameManager.instance.RemoveHandcuff();
 
         if (resultChain.Count == 0)
             groupOrder.Remove("result");

@@ -4,31 +4,32 @@ using UnityEngine;
 
 public class MineralItem : MonoBehaviour
 {
-    [Header("³¯¾Æ°¡±â ¼³Á¤")]
-    public float flyDuration = 0.4f; // ³¯¾Æ°¡´Â ½Ã°£
-    public float arcHeight = 2.0f; // Æ÷¹°¼± ³ôÀÌ
+    [Header("ï¿½ï¿½ï¿½Æ°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½")]
+    public float flyDuration = 0.4f; // ï¿½ï¿½ï¿½Æ°ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½
+    public float arcHeight = 2.0f; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-    private bool isInitialized = false; // ÃÊ±âÈ­ ¿©ºÎ
+    private bool isInitialized = false; // ï¿½Ê±ï¿½È­ ï¿½ï¿½ï¿½ï¿½
 
-    // ÇÃ·¹ÀÌ¾î°¡ Ã³À½ µî·Ï
+    // ï¿½Ã·ï¿½ï¿½Ì¾î°¡ Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½
     public void Init(Transform playerTransform)
     {
-        // ItemChain¿¡ ÀÚ½ÅÀ» µî·ÏÇÏ°í targetÀ» ¹Þ¾Æ¿È
+        // ItemChainï¿½ï¿½ ï¿½Ú½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ targetï¿½ï¿½ ï¿½Þ¾Æ¿ï¿½
         ItemChain chain = playerTransform.GetComponent <ItemChain>();
 
         if (chain == null)
         {
-            Debug.LogError("[MineralItem] Player¿¡ ItemChainÀÌ ¾ø¾î¿ä!");
+            Debug.LogError("[MineralItem] Playerï¿½ï¿½ ItemChainï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½!");
             return;
         }
 
-        chain.AddItem(this);
+        if (!chain.AddItem(this)) return;
+        GameManager.instance.AddMineral();
         isInitialized = true;
     }
 
     public void FlyTo(Vector3 targetPos, System.Action onComplete)
     {
-        // ³¯¾Æ°¡´Â µ¿¾È ItemChain ÃßÀû Áß´Ü
+        // ï¿½ï¿½ï¿½Æ°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ItemChain ï¿½ï¿½ï¿½ï¿½ ï¿½ß´ï¿½
         isInitialized = false;
         StartCoroutine(FlyRoutine(targetPos, onComplete));
     }
@@ -43,7 +44,7 @@ public class MineralItem : MonoBehaviour
             elapsed += Time.deltaTime;
             float t = elapsed / flyDuration;
 
-            // Æ÷¹°¼± °è»ê
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
             Vector3 linearPos = Vector3.Lerp(startPos, targetPos, t);
             float arc = arcHeight * Mathf.Sin(Mathf.PI * t);
             transform.position = linearPos + Vector3.up * arc;
@@ -53,7 +54,7 @@ public class MineralItem : MonoBehaviour
 
         transform.position = targetPos;
 
-        // ÂøÁö ¿Ï·á ÄÝ¹é
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½ ï¿½Ý¹ï¿½
         onComplete?.Invoke();
     }
 }

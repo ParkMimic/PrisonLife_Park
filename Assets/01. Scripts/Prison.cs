@@ -37,6 +37,7 @@ public class Prison : MonoBehaviour
         }
 
         prisoners.Add(customer);
+        GameManager.instance.AddPrisoner();
         Debug.Log($"[Prison] 수감 완료! 현재 {prisoners.Count}명");
     }
 }

@@ -23,7 +23,8 @@ public class ResultItem : MonoBehaviour
         isInitialized = true;
 
         Vector3 targetPos = chain.GetNextStackPosition();
-        chain.AddResultItem(this);
+        if (!chain.AddResultItem(this)) return;
+        GameManager.instance.AddHandcuff();
         StartCoroutine(FlyRoutine(targetPos));
     }
 
