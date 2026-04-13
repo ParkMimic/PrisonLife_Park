@@ -3,32 +3,35 @@ using System.Collections.Generic;
 
 public class ItemChain : MonoBehaviour
 {
-    [Header("½ºÅÃ ¼³Á¤")]
+    [Header("ìŠ¤íƒ ì„¤ì •")]
     public Vector3 stackOffset = new Vector3(0f, 0f, -1f);
     public float itemHeight = 0.5f;
     public float followSpeed = 10f;
 
-    [Header("¾ÆÀÌÅÛ Å¸ÀÔº° È¸Àü ¼³Á¤")]
+    [Header("íƒ€ì…ë³„ íšŒì „ ì„¤ì •")]
     public Vector3 mineralRotation = new Vector3(90f, 0f, 0f);
     public Vector3 resultRotation = new Vector3(0f, 0f, 0f);
+    public Vector3 moneyRotation = new Vector3(0f, 0f, 0f);
 
-    [Header("±×·ì °£ °£°İ")]
-    public float groupOffset = 1.5f;  // ±×·ì »çÀÌ ZÃà °£°İ
+    [Header("ê·¸ë£¹ ê°„ ê°„ê²©")]
+    public float groupOffset = 1.5f;
 
-    [Header("ÃÖ´ë º¸À¯·®")]
+    [Header("ìµœëŒ€ ê°œìˆ˜")]
     public int maxItemCount = 10;
 
     private List<MineralItem> mineralChain = new List<MineralItem>();
     private List<ResultItem> resultChain = new List<ResultItem>();
+    private List<MoneyItem> moneyChain = new List<MoneyItem>();
+
     private List<string> groupOrder = new List<string>();
 
     public int GetResultCount() => resultChain.Count;
+    public int GetMoneyCount() => moneyChain.Count;
 
     void Update()
     {
         if (GetCount() == 0) return;
 
-        // Ã¹ ¹øÂ° ±×·ì ½ÃÀÛ À§Ä¡
         Vector3 currentBase = transform.position
             + transform.TransformDirection(stackOffset);
 
@@ -38,6 +41,8 @@ public class ItemChain : MonoBehaviour
                 currentBase = UpdateGroup(mineralChain, currentBase, mineralRotation);
             else if (group == "result")
                 currentBase = UpdateGroup(resultChain, currentBase, resultRotation);
+            else if (group == "money")
+                currentBase = UpdateGroup(moneyChain, currentBase, moneyRotation);
         }
     }
 
@@ -46,7 +51,6 @@ public class ItemChain : MonoBehaviour
     {
         for (int i = 0; i < group.Count; i++)
         {
-            // YÃàÀ¸·Î ½×±â
             Vector3 targetPos = basePos + Vector3.up * (itemHeight * i);
 
             group[i].transform.position = Vector3.Lerp(
@@ -58,21 +62,41 @@ public class ItemChain : MonoBehaviour
             group[i].transform.rotation = Quaternion.Euler(rotation);
         }
 
-        // ´ÙÀ½ ±×·ìÀº ZÃàÀ¸·Î µÚ¿¡ ¹èÄ¡
-        return basePos + transform.TransformDirection(
-            new Vector3(0f, 0f, -groupOffset));
+        return basePos + transform.TransformDirection(new Vector3(0f, 0f, -groupOffset));
     }
 
-    public bool IsFull() => GetCount() >= maxItemCount;
+public bool IsFull() => GetCount() >= maxItemCount;
 
-    public int GetCount() => mineralChain.Count + resultChain.Count;
+    public int GetCount() => mineralChain.Count + resultChain.Count + moneyChain.Count;
 
     public Vector3 GetNextStackPosition()
     {
-        // ÇöÀç ÇØ´ç Å¸ÀÔ ±×·ìÀÇ ´ÙÀ½ À§Ä¡ ¹İÈ¯
         Vector3 stackBase = transform.position
             + transform.TransformDirection(stackOffset);
         return stackBase + Vector3.up * (itemHeight * GetCount());
+    }
+
+    // íŠ¹ì • ê·¸ë£¹ì˜ ë‹¤ìŒ ìŠ¤íƒ ìœ„ì¹˜ë¥¼ ê·¸ë£¹ ì˜¤í”„ì…‹ê¹Œì§€ ë°˜ì˜í•´ì„œ ë°˜í™˜
+    public Vector3 GetNextGroupPosition(string groupName)
+    {
+        Vector3 currentBase = transform.position
+            + transform.TransformDirection(stackOffset);
+
+        foreach (string group in groupOrder)
+        {
+            if (group == groupName)
+            {
+                int count = group == "mineral" ? mineralChain.Count
+                          : group == "result"  ? resultChain.Count
+                          : moneyChain.Count;
+
+                return currentBase + Vector3.up * (itemHeight * count);
+            }
+            currentBase += transform.TransformDirection(new Vector3(0f, 0f, -groupOffset));
+        }
+
+        // ì•„ì§ ê·¸ë£¹ì´ ì—†ìœ¼ë©´ ê¸°ì¡´ ê·¸ë£¹ ë’¤ì— ìœ„ì¹˜
+        return currentBase;
     }
 
     public bool AddItem(MineralItem item)
@@ -94,7 +118,7 @@ public class ItemChain : MonoBehaviour
     {
         if (IsFull())
         {
-            Debug.Log("[ItemChain] ÃÖ´ë º¸À¯·® µµ´Ş!");
+            Debug.Log("[ItemChain] ìµœëŒ€ ê°œìˆ˜ ì´ˆê³¼!");
             return false;
         }
 
@@ -102,6 +126,22 @@ public class ItemChain : MonoBehaviour
             groupOrder.Add("result");
 
         resultChain.Add(item);
+        return true;
+    }
+
+    public bool AddMoneyItem(MoneyItem item)
+    {
+        if (IsFull())
+        {
+            Debug.Log("[ItemChain] ìµœëŒ€ ê°œìˆ˜ ì´ˆê³¼!");
+            return false;
+        }
+
+        if (moneyChain.Count == 0)
+            groupOrder.Add("money");
+
+        moneyChain.Add(item);
+        GameManager.instance.AddMoney(item.value);
         return true;
     }
 
@@ -129,6 +169,20 @@ public class ItemChain : MonoBehaviour
 
         if (resultChain.Count == 0)
             groupOrder.Remove("result");
+
+        return item;
+    }
+
+    public MoneyItem PopMoneyItem()
+    {
+        if (moneyChain.Count == 0) return null;
+
+        int lastIndex = moneyChain.Count - 1;
+        MoneyItem item = moneyChain[lastIndex];
+        moneyChain.RemoveAt(lastIndex);
+
+        if (moneyChain.Count == 0)
+            groupOrder.Remove("money");
 
         return item;
     }

@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 7947029287245973831}
   - component: {fileID: 1585839142706259971}
   - component: {fileID: 8999474134979307813}
-  - component: {fileID: 3047803096307282806}
   m_Layer: 0
   m_Name: Mineral
   m_TagString: Untagged
@@ -48,7 +47,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemPrefab: {fileID: 966607810235432403, guid: 035c2f4c68ff35d4c81d9b49f651d589, type: 3}
-  respawnTime: 10
+  respawnTime: 3
 --- !u!136 &8999474134979307813
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -72,20 +71,6 @@ CapsuleCollider:
   m_Height: 0.3
   m_Direction: 1
   m_Center: {x: -0.13, y: 0.1, z: 0.2}
---- !u!114 &3047803096307282806
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2518132312620273559}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 689ae7857b896ec428568cadf78f88d9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  itemPrefab: {fileID: 966607810235432403, guid: 035c2f4c68ff35d4c81d9b49f651d589, type: 3}
-  respawnTime: 3
 --- !u!1001 &3885759961815655061
 PrefabInstance:
   m_ObjectHideFlags: 0

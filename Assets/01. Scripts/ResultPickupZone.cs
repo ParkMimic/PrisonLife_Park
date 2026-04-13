@@ -1,22 +1,18 @@
 using UnityEngine;
 
-public class ResultPickupZone : MonoBehaviour
+public class ResultPickupZone : MonoBehaviour, IInteractable
 {
-
-    private void OnTriggerEnter(Collider other)
+    public void OnPlayerEnter(PlayerInteraction player)
     {
-        if (!other.CompareTag("Player")) return;
+        if (player.ItemChain.IsFull()) return;
 
-        ItemChain chain = other.GetComponent<ItemChain>();
-        if (chain == null) return;
-        if (chain.IsFull()) return;
-
-        // 트리거 범위 안의 모든 ResultItem 픽업
         ResultItem[] items = GetComponentsInChildren<ResultItem>();
         foreach (var item in items)
         {
-            if (chain.IsFull()) break;
-            item.Init(other.transform);
+            if (player.ItemChain.IsFull()) break;
+            item.Init(player.transform);
         }
     }
+
+    public void OnPlayerExit(PlayerInteraction player) { }
 }

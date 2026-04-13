@@ -3,7 +3,6 @@ using System.Collections;
 
 public class ResultItem : MonoBehaviour
 {
-    [Header("³¯¾Æ°¡±â ¼³Á¤")]
     public float flyDuration = 0.3f;
     public float arcHeight = 1.5f;
 
@@ -21,18 +20,6 @@ public class ResultItem : MonoBehaviour
     {
         ItemChain chain = playerTransform.GetComponent<ItemChain>();
 
-        if (chain == null)
-        {
-            Debug.LogError("[ResultItem] Player¿¡ ItemChainÀÌ ¾ø¾î¿ä!");
-            return;
-        }
-
-        if (chain.IsFull())
-        {
-            Debug.Log("[ResultItem] ÃÖ´ë º¸À¯·® µµ´Ş!");
-            return;
-        }
-
         isInitialized = true;
 
         Vector3 targetPos = chain.GetNextStackPosition();
@@ -40,10 +27,14 @@ public class ResultItem : MonoBehaviour
         StartCoroutine(FlyRoutine(targetPos));
     }
 
-    // ConverterZone¿¡¼­ È£ÃâÇÏ´Â FlyTo Ãß°¡
     public void FlyTo(Vector3 targetPos, System.Action onComplete)
     {
         isInitialized = false;
+
+        // ë¹„í–‰ ì¤‘ í”Œë ˆì´ì–´ íŠ¸ë¦¬ê±°ì— ì¬ì§„ì…í•´ì„œ ì²´ì¸ì— ë‹¤ì‹œ ì¶”ê°€ë˜ëŠ” ê²ƒì„ ë°©ì§€
+        Collider col = GetComponent<Collider>();
+        if (col != null) col.enabled = false;
+
         StartCoroutine(FlyToRoutine(targetPos, onComplete));
     }
 

@@ -1,15 +1,14 @@
 using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.Animations;
 using UnityEngine;
 
 public class Mineral : MonoBehaviour
 {
-    [Header("¼³Á¤")]
-    public GameObject itemPrefab; // µå·ÓÇÒ ÀÛÀº ±¤¹° ¾ÆÀÌÅÛ
-    public float respawnTime = 10f; // ¸®½ºÆù ´ë±â ½Ã°£
+    [Header("ì„¤ì •")]
+    public GameObject itemPrefab;
+    public float respawnTime = 10f;
 
     private bool isBroken = false;
+    private bool isRespawning = false;
     private MineralSpawner spawner;
 
     public void Init(MineralSpawner spawner)
@@ -17,24 +16,28 @@ public class Mineral : MonoBehaviour
         this.spawner = spawner;
     }
 
-    //private void OnTriggerEnter(Collider other)
-    //{
-    //    if (!other.CompareTag("Player")) return;
-    //    Break(other.transform);
-    //}
+    // ê´‘ë¬¼ì´ í”Œë ˆì´ì–´ ë²”ìœ„ ì•ˆì— ìˆëŠ” ë™ì•ˆ ë§¤ ë¬¼ë¦¬ í”„ë ˆì„ë§ˆë‹¤ í˜¸ì¶œ
+    private void OnTriggerStay(Collider other)
+    {
+        if (isBroken || isRespawning) return;
 
-    // ±¤¹° ÆÄ±« È£Ãâ
+        PlayerInteraction player = other.GetComponent<PlayerInteraction>();
+        if (player == null) return;
+
+        if (player.TryMine())
+            Break(player.transform);
+    }
+
     public void Break(Transform playerTransform)
     {
         if (isBroken) return;
 
-        // spawner°¡ nullÀÌ¸é ½º½º·Î Ã£±â
         if (spawner == null)
             spawner = FindFirstObjectByType<MineralSpawner>();
 
         if (spawner == null)
         {
-            Debug.LogError($"[Mineral] MineralSpawner¸¦ Ã£À» ¼ö ¾ø¾î¿ä! ({gameObject.name})");
+            Debug.LogError($"[Mineral] MineralSpawnerë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤! ({gameObject.name})");
             return;
         }
 
@@ -42,7 +45,6 @@ public class Mineral : MonoBehaviour
 
         if (itemPrefab != null)
         {
-            // ÀÛÀº ±¤¹° ¾ÆÀÌÅÛ µå·Ó
             GameObject item = Instantiate(itemPrefab, transform.position, Quaternion.identity);
             item.GetComponent<MineralItem>()?.Init(playerTransform);
         }
@@ -54,21 +56,23 @@ public class Mineral : MonoBehaviour
     public void Respawn()
     {
         isBroken = false;
+        isRespawning = true;
         gameObject.SetActive(true);
         StartCoroutine(ScaleIn());
     }
 
-    System.Collections.IEnumerator ScaleIn()
+    IEnumerator ScaleIn()
     {
         transform.localScale = Vector3.zero;
         Vector3 oriScale = new Vector3(3.5f, 3.5f, 3.5f);
         float t = 0f;
-        while (t < 3.5f)
+        while (t < 1f)
         {
             t += Time.deltaTime * 2f;
             transform.localScale = Vector3.Lerp(Vector3.zero, oriScale, t);
             yield return null;
         }
         transform.localScale = oriScale;
+        isRespawning = false;
     }
 }
