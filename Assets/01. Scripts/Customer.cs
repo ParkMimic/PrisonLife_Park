@@ -14,7 +14,11 @@ public class Customer : MonoBehaviour
     private CustomerSpawner spawner;
     private Vector3 targetPosition;
     private bool isMoving = false;
-    private bool isSatisfied = false;
+
+    [Header("진행 상태")]
+    public int currentArrivedCount = 0; // 현재까지 받은 아이템 수
+    public bool isSatisfied = false; // 거래 만족 여부
+
 
     public void Init(CustomerSpawner spawner)
     {
@@ -40,6 +44,21 @@ public class Customer : MonoBehaviour
         {
             transform.position = targetPosition;
             isMoving = false;
+        }
+    }
+
+    // 아이템을 하나 받을 때마다 호출될 메서드
+    public void AddDeliverCount(int amount)
+    {
+        if (isSatisfied) return;
+
+        currentArrivedCount += amount;
+        Debug.Log($"[Customer] 아이템 받음! 현재: {currentArrivedCount}/{itemsRequired}");
+
+        // 다 채워졌는지 확인
+        if (currentArrivedCount >= itemsRequired)
+        {
+            Satisfy();
         }
     }
 

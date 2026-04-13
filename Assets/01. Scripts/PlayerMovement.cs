@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -9,12 +10,14 @@ public class PlayerMovement : MonoBehaviour
     public Joystick joystick;
     public float moveSpeed;
 
+    Animator anim;
     Rigidbody rigid;
     Camera mainCam;
 
-    private void Start()
+    private void Awake()
     {
         rigid = GetComponent<Rigidbody>();
+        anim = GetComponent<Animator>();
         mainCam = Camera.main;
     }
 
@@ -23,8 +26,11 @@ public class PlayerMovement : MonoBehaviour
         float h = joystick.Horizontal;
         float v = joystick.Vertical;
 
-        if (Mathf.Abs(h) < 0.01f && Mathf.Abs(v) < 0.01f) return;
-
+        if (Mathf.Abs(h) < 0.01f && Mathf.Abs(v) < 0.01f)
+        {
+            anim.SetFloat("speed", 0f); // 조이스틱이 거의 중앙에 있을 때 애니메이션 속도를 0으로 설정
+            return;
+        }
         // 카메라의 forward/right를 기준으로 방향 계산
         Vector3 camForward = mainCam.transform.forward;
         Vector3 camRight = mainCam.transform.right;
@@ -43,5 +49,7 @@ public class PlayerMovement : MonoBehaviour
 
         // 이동 방향으로 캐릭터 회전
         transform.rotation = Quaternion.LookRotation(moveDir);
+
+        anim.SetFloat("speed", moveDir.magnitude);
     }
 }

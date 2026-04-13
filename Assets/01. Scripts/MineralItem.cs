@@ -4,23 +4,14 @@ using UnityEngine;
 
 public class MineralItem : MonoBehaviour
 {
-    [Header("���ư��� ����")]
-    public float flyDuration = 0.4f; // ���ư��� �ð�
-    public float arcHeight = 2.0f; // ������ ����
+    public float flyDuration = 0.4f;
+    public float arcHeight = 2.0f;
 
-    private bool isInitialized = false; // �ʱ�ȭ ����
+    private bool isInitialized = false; 
 
-    // �÷��̾ ó�� ���
     public void Init(Transform playerTransform)
     {
-        // ItemChain�� �ڽ��� ����ϰ� target�� �޾ƿ�
         ItemChain chain = playerTransform.GetComponent <ItemChain>();
-
-        if (chain == null)
-        {
-            Debug.LogError("[MineralItem] Player�� ItemChain�� �����!");
-            return;
-        }
 
         if (!chain.AddItem(this)) return;
         GameManager.instance.AddMineral();
@@ -29,7 +20,6 @@ public class MineralItem : MonoBehaviour
 
     public void FlyTo(Vector3 targetPos, System.Action onComplete)
     {
-        // ���ư��� ���� ItemChain ���� �ߴ�
         isInitialized = false;
         StartCoroutine(FlyRoutine(targetPos, onComplete));
     }
@@ -44,7 +34,6 @@ public class MineralItem : MonoBehaviour
             elapsed += Time.deltaTime;
             float t = elapsed / flyDuration;
 
-            // ������ ���
             Vector3 linearPos = Vector3.Lerp(startPos, targetPos, t);
             float arc = arcHeight * Mathf.Sin(Mathf.PI * t);
             transform.position = linearPos + Vector3.up * arc;
@@ -54,7 +43,6 @@ public class MineralItem : MonoBehaviour
 
         transform.position = targetPos;
 
-        // ���� �Ϸ� �ݹ�
         onComplete?.Invoke();
     }
 }

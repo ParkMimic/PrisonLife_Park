@@ -150,3 +150,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 3
   prisonMoveSpeed: 4
+  itemsRequired: 4
+  moneyReward: 1

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class ItemChain : MonoBehaviour
 {
     [Header("스택 설정")]
-    public Vector3 stackOffset = new Vector3(0f, 0f, -1f);
+    public Vector3 stackOffset = new Vector3(0f, 1f, -1f);
     public float itemHeight = 0.5f;
     public float followSpeed = 10f;
 
@@ -33,7 +33,7 @@ public class ItemChain : MonoBehaviour
     {
         if (GetCount() == 0) return;
 
-        Vector3 currentBase = transform.position
+        Vector3 currentBase = transform.localPosition
             + transform.TransformDirection(stackOffset);
 
         foreach (string group in groupOrder)
@@ -54,13 +54,13 @@ public class ItemChain : MonoBehaviour
         {
             Vector3 targetPos = basePos + Vector3.up * (itemHeight * i);
 
-            group[i].transform.position = Vector3.Lerp(
-                group[i].transform.position,
+            group[i].transform.localPosition = Vector3.Lerp(
+                group[i].transform.localPosition,
                 targetPos,
                 followSpeed * Time.deltaTime
             );
 
-            group[i].transform.rotation = Quaternion.Euler(rotation);
+            group[i].transform.localRotation = Quaternion.Euler(rotation);
         }
 
         return basePos + transform.TransformDirection(new Vector3(0f, 0f, -groupOffset));
@@ -72,7 +72,7 @@ public bool IsFull() => GetCount() >= maxItemCount;
 
     public Vector3 GetNextStackPosition()
     {
-        Vector3 stackBase = transform.position
+        Vector3 stackBase = transform.localPosition
             + transform.TransformDirection(stackOffset);
         return stackBase + Vector3.up * (itemHeight * GetCount());
     }
@@ -80,7 +80,7 @@ public bool IsFull() => GetCount() >= maxItemCount;
     // 특정 그룹의 다음 스택 위치를 그룹 오프셋까지 반영해서 반환
     public Vector3 GetNextGroupPosition(string groupName)
     {
-        Vector3 currentBase = transform.position
+        Vector3 currentBase = transform.localPosition
             + transform.TransformDirection(stackOffset);
 
         foreach (string group in groupOrder)

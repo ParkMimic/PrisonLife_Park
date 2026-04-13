@@ -9,7 +9,7 @@ public class ConverterProcessor : MonoBehaviour
     [Header("프로세서 설정")]
     public InputType inputType = InputType.Mineral;
     public OutputType outputType = OutputType.SpawnPrefab;
-    public int itemsRequired = 2;       // 몇 개 투입당 결과 1개
+    public int itemsRequired = 4;       // 몇 개 투입당 결과 1개
     public float convertInterval = 1.0f;   // 변환 간격
 
     [Header("SpawnPrefab 설정")]
@@ -26,26 +26,6 @@ public class ConverterProcessor : MonoBehaviour
     private int storedCount = 0;
     private int resultCount = 0;
     private bool isConverting = false;
-
-    void Start()
-    {
-        if (display == null)
-            Debug.LogError("[Processor] display가 연결되지 않았어요!");
-
-        if (outputType == OutputType.SpawnPrefab)
-        {
-            if (resultPrefab == null)
-                Debug.LogError("[Processor] resultPrefab이 null이에요!");
-            if (resultSpawnPoint == null)
-                Debug.LogError("[Processor] resultSpawnPoint가 null이에요!");
-        }
-
-        if (outputType == OutputType.SatisfyCustomer)
-        {
-            if (customerSpawner == null)
-                Debug.LogError("[Processor] customerSpawner가 연결되지 않았어요!");
-        }
-    }
 
     public void OnItemInserted()
     {
