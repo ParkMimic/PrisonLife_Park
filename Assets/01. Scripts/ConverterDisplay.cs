@@ -3,38 +3,58 @@ using System.Collections.Generic;
 
 public class ConverterDisplay : MonoBehaviour
 {
-    [Header("µğ½ºÇÃ·¹ÀÌ ¼³Á¤")]
+    [Header("ë””ìŠ¤í”Œë ˆì´ ì„¤ì •")]
     public GameObject mineralDisplayPrefab;
     public Transform displayBase;
     public float columnOffset = 0.4f;
     public float rowHeight = 0.4f;
 
-    [Header("±¤¹° È¸Àü ¼³Á¤")]
+    [Header("ì•„ì´í…œ íšŒì „ ì„¤ì •")]
     public Vector3 mineralRotation = new Vector3(0f, 0f, 90f);
+
+    [Header("ìœ„ì¹˜ ê°±ì‹  ì†ë„")]
+    public float repositionSpeed = 10f;
 
     private List<GameObject> displayItems = new List<GameObject>();
 
-    // ´ÙÀ½ ÂøÁö À§Ä¡ ¹İÈ¯
-    public Vector3 GetNextPosition()
+    void Update()
     {
-        int index = displayItems.Count;
+        // ì¸ë²¤í† ë¦¬ì²˜ëŸ¼: ì•„ì´í…œì´ ì œê±°ë˜ë©´ ë‚˜ë¨¸ì§€ê°€ ë¹ˆ ìë¦¬ë¡œ ì´ë™
+        displayItems.RemoveAll(item => item == null);
+
+        for (int i = 0; i < displayItems.Count; i++)
+        {
+            Vector3 targetPos = GetPositionByIndex(i);
+            displayItems[i].transform.position = Vector3.Lerp(
+                displayItems[i].transform.position, targetPos, repositionSpeed * Time.deltaTime
+            );
+        }
+    }
+
+    // ì¸ë±ìŠ¤ë¡œ ëª©í‘œ ìœ„ì¹˜ ê³„ì‚° (ë‚´ë¶€ + GetNextPosition ê³µìš©)
+    Vector3 GetPositionByIndex(int index)
+    {
         int col = index % 2;
         int row = index / 2;
-
         float zOffset = (col == 0) ? -columnOffset : columnOffset;
         float yOffset = row * rowHeight;
-
         return displayBase.position + new Vector3(0f, yOffset, zOffset);
     }
 
-    // ³¯¾Æ¿Â ¿ÀºêÁ§Æ®¸¦ ±×´ë·Î µî·Ï
+    // ë‹¤ìŒ ì•„ì´í…œì´ ë°°ì¹˜ë  ìœ„ì¹˜ ë°˜í™˜
+    public Vector3 GetNextPosition()
+    {
+        return GetPositionByIndex(displayItems.Count);
+    }
+
+    // ë‚ ì•„ì˜¨ ì˜¤ë¸Œì íŠ¸ë¥¼ ë””ìŠ¤í”Œë ˆì´ì— ë“±ë¡
     public void AddMineral(GameObject obj)
     {
-        obj.transform.rotation = Quaternion.Euler(mineralRotation); 
+        obj.transform.rotation = Quaternion.Euler(mineralRotation);
         displayItems.Add(obj);
     }
 
-    //  À§¿¡¼­ºÎÅÍ count°³ Á¦°Å
+    // ë³€í™˜ ì‹œ ë’¤(ìƒë‹¨)ì—ì„œë¶€í„° countê°œ ì œê±°
     public void RemoveMineral(int count)
     {
         int removeCount = Mathf.Min(count, displayItems.Count);

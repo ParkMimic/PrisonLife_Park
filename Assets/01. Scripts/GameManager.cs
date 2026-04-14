@@ -55,6 +55,13 @@ public class GameManager : MonoBehaviour
         Debug.Log($"[GameManager] 돈 +{amount} / 보유: {moneyAmount}");
     }
 
+    // ── 돈 지출 ──────────────────────────────────────────────
+    public void SpendMoney(int amount)
+    {
+        moneyAmount = Mathf.Max(0, moneyAmount - amount);
+        Debug.Log($"[GameManager] 돈 -{amount} / 보유: {moneyAmount}");
+    }
+
     // ── 수감자 ───────────────────────────────────────────────
     public void AddPrisoner(int amount = 1)
     {

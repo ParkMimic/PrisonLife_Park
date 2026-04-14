@@ -11,6 +11,9 @@ public class Mineral : MonoBehaviour
     private bool isRespawning = false;
     private MineralSpawner spawner;
 
+    // 채굴 가능 여부 (광부 AI가 타겟 선정 시 사용)
+    public bool IsAvailable => !isBroken && !isRespawning;
+
     public void Init(MineralSpawner spawner)
     {
         this.spawner = spawner;
@@ -47,6 +50,32 @@ public class Mineral : MonoBehaviour
         {
             GameObject item = Instantiate(itemPrefab, transform.position, Quaternion.identity);
             item.GetComponent<MineralItem>()?.Init(playerTransform);
+        }
+
+        gameObject.SetActive(false);
+        spawner.StartRespawn(this, respawnTime);
+    }
+
+    // 광부 AI 전용: 아이템을 직접 변환기로 보냄
+    public void BreakByAI(System.Action<MineralItem> onItemCreated)
+    {
+        if (!IsAvailable) return;
+
+        if (spawner == null)
+            spawner = FindFirstObjectByType<MineralSpawner>();
+
+        if (spawner == null)
+        {
+            Debug.LogError($"[Mineral] MineralSpawner를 찾을 수 없습니다! ({gameObject.name})");
+            return;
+        }
+
+        isBroken = true;
+
+        if (itemPrefab != null)
+        {
+            GameObject item = Instantiate(itemPrefab, transform.position, Quaternion.identity);
+            onItemCreated?.Invoke(item.GetComponent<MineralItem>());
         }
 
         gameObject.SetActive(false);

@@ -66,7 +66,7 @@ public class ItemChain : MonoBehaviour
         return basePos + transform.TransformDirection(new Vector3(0f, 0f, -groupOffset));
     }
 
-public bool IsFull() => GetCount() >= maxItemCount;
+    public bool IsFull() => GetCount() >= maxItemCount;
 
     public int GetCount() => mineralChain.Count + resultChain.Count + moneyChain.Count;
 

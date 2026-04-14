@@ -24,6 +24,32 @@ public class MoneyItem : MonoBehaviour
         StartCoroutine(FlyRoutine(targetPos));
     }
 
+    public void FlyTo(Vector3 targetPos, System.Action onComplete)
+    {
+        Collider col = GetComponent<Collider>();
+        if (col != null) col.enabled = false;
+
+        StartCoroutine(FlyToRoutine(targetPos, onComplete));
+    }
+
+    IEnumerator FlyToRoutine(Vector3 targetPos, System.Action onComplete)
+    {
+        Vector3 startPos = transform.position;
+        float elapsed = 0f;
+
+        while (elapsed < flyDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / flyDuration;
+            Vector3 linearPos = Vector3.Lerp(startPos, targetPos, t);
+            transform.position = linearPos + Vector3.up * arcHeight * Mathf.Sin(Mathf.PI * t);
+            yield return null;
+        }
+
+        transform.position = targetPos;
+        onComplete?.Invoke();
+    }
+
     IEnumerator FlyRoutine(Vector3 targetPos)
     {
         Vector3 startPos = transform.position;

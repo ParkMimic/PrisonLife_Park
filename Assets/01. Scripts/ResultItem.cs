@@ -8,6 +8,9 @@ public class ResultItem : MonoBehaviour
 
     private bool isInitialized = false;
 
+    // 스폰 지점에서 픽업될 때 ConverterProcessor에 알리는 콜백
+    public System.Action onPickedUp;
+
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player")) return;
@@ -21,6 +24,8 @@ public class ResultItem : MonoBehaviour
         ItemChain chain = playerTransform.GetComponent<ItemChain>();
 
         isInitialized = true;
+        onPickedUp?.Invoke();   // 스폰 지점 리스트에서 제거 요청
+        onPickedUp = null;
 
         Vector3 targetPos = chain.GetNextStackPosition();
         if (!chain.AddResultItem(this)) return;
