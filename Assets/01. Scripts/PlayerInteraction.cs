@@ -26,7 +26,7 @@ public class PlayerInteraction : MonoBehaviour
 
     public bool TryMine()
     {
-        if (ItemChain.IsFull()) return false;
+        if (ItemChain.IsMineralFull()) return false;
         if (Time.time - lastMiningTime < miningCooldown) return false;
         lastMiningTime = Time.time;
         return true;

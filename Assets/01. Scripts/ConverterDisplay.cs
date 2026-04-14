@@ -12,6 +12,8 @@ public class ConverterDisplay : MonoBehaviour
     [Header("아이템 회전 설정")]
     public Vector3 mineralRotation = new Vector3(0f, 0f, 90f);
 
+    // 최대 적재량은 GameManager.maxMineralDisplay 에서 관리
+
     [Header("위치 갱신 속도")]
     public float repositionSpeed = 10f;
 
@@ -46,6 +48,8 @@ public class ConverterDisplay : MonoBehaviour
     {
         return GetPositionByIndex(displayItems.Count);
     }
+
+    public bool IsFull() => displayItems.Count >= GameManager.instance.maxMineralDisplay;
 
     // 날아온 오브젝트를 디스플레이에 등록
     public void AddMineral(GameObject obj)

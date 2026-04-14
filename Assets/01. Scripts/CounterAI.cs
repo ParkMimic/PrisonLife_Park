@@ -24,6 +24,7 @@ public class CounterAI : MonoBehaviour
     public float arrivalDistance = 1.0f; // 목적지 도달 판정 거리
 
     private NavMeshAgent agent;
+    private Animator anim;
     private List<ResultItem> carriedItems = new List<ResultItem>();
 
     // ── 초기화 ────────────────────────────────────────────────
@@ -31,6 +32,12 @@ public class CounterAI : MonoBehaviour
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        anim  = GetComponent<Animator>();
+    }
+
+    private void Update()
+    {
+        anim?.SetBool("isWalking", agent.velocity.sqrMagnitude > 0.01f);
     }
 
     public void Init(Transform pickup, Transform counter)
@@ -41,9 +48,9 @@ public class CounterAI : MonoBehaviour
 
     private void Start()
     {
-        if (converterProcessor == null) converterProcessor = FindFirstObjectByType<ConverterProcessor>();
-        if (customerSpawner    == null) customerSpawner    = FindFirstObjectByType<CustomerSpawner>();
-        if (moneyPickupZone    == null) moneyPickupZone    = FindFirstObjectByType<MoneyPickupZone>();
+        if (converterProcessor == null) converterProcessor = GameManager.instance.converterProcessor;
+        if (customerSpawner    == null) customerSpawner    = GameManager.instance.customerSpawner;
+        if (moneyPickupZone    == null) moneyPickupZone    = GameManager.instance.moneyPickupZone;
 
         StartCoroutine(CounterLoop());
     }
@@ -98,31 +105,43 @@ public class CounterAI : MonoBehaviour
         {
             Customer customer = customerSpawner.GetFirstCustomer();
 
-            if (customer == null || customer.isSatisfied)
+            if (customer == null || !customer.IsReady || GameManager.instance.prison.IsFull())
             {
                 yield return new WaitForSeconds(searchInterval);
                 continue;
             }
 
-            ResultItem item = carriedItems[carriedItems.Count - 1];
-            carriedItems.RemoveAt(carriedItems.Count - 1);
+            int needed  = customer.itemsRequired - customer.currentArrivedCount - customer.pendingCount;
+            int toSend  = Mathf.Min(Mathf.Min(needed, carriedItems.Count), 4);
 
-            item.transform.SetParent(null);
-            item.gameObject.SetActive(true);
-
-            Vector3 targetPos = customer.transform.position + Vector3.up * 1.5f;
-
-            item.FlyTo(targetPos, () =>
+            if (toSend <= 0)
             {
-                if (item != null) Destroy(item.gameObject);
+                yield return new WaitForSeconds(searchInterval);
+                continue;
+            }
 
-                customer.AddDeliverCount(1);
+            customer.pendingCount += toSend; // 발사 전 예약
 
-                if (customer.currentArrivedCount >= customer.itemsRequired)
-                    moneyPickupZone?.SpawnMoney(customer.moneyReward);
-            });
+            for (int i = 0; i < toSend; i++)
+            {
+                ResultItem item = carriedItems[carriedItems.Count - 1];
+                carriedItems.RemoveAt(carriedItems.Count - 1);
 
-            yield return new WaitForSeconds(deliverInterval);
+                item.transform.SetParent(null);
+                item.gameObject.SetActive(true);
+
+                Vector3 targetPos = customer.transform.position + Vector3.up * 1.5f;
+                item.FlyTo(targetPos, () =>
+                {
+                    customer.pendingCount--;
+                    if (item != null) Destroy(item.gameObject);
+                    customer.AddDeliverCount(1);
+                    if (customer.currentArrivedCount >= customer.itemsRequired)
+                        moneyPickupZone?.SpawnMoney(customer.moneyReward);
+                });
+
+                yield return new WaitForSeconds(deliverInterval);
+            }
         }
     }
 

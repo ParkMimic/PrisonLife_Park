@@ -17,6 +17,7 @@ public class ConverterProcessor : MonoBehaviour
     public GameObject resultPrefab;
     public Transform resultSpawnPoint;
     public float resultStackHeight = 0.5f;
+    // 최대 적재량은 GameManager.maxResultStack 에서 관리
 
     [Header("SatisfyCustomer 설정")]
     public CustomerSpawner customerSpawner;
@@ -85,8 +86,9 @@ public class ConverterProcessor : MonoBehaviour
     {
         if (resultPrefab == null || resultSpawnPoint == null) return;
 
-        // 파괴된 참조 정리 후 현재 개수 기준으로 위치 결정
         spawnedItems.RemoveAll(item => item == null);
+
+        if (spawnedItems.Count >= GameManager.instance.maxResultStack) return;
 
         Vector3 spawnPos = resultSpawnPoint.position
             + Vector3.up * (resultStackHeight * spawnedItems.Count);

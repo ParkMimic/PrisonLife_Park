@@ -4,7 +4,21 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
-    public Player player;
+    // ── 씬 시스템 참조 ────────────────────────────────────────
+    [Header("씬 시스템 참조")]
+    public Player            player;
+    public MineralSpawner    mineralSpawner;
+    public ConverterDisplay  converterDisplay;
+    public ConverterProcessor converterProcessor;
+    public CustomerSpawner   customerSpawner;
+    public MoneyPickupZone   moneyPickupZone;
+    public Prison            prison;
+
+    // ── 적재 한도 ────────────────────────────────────────────
+    [Header("적재 한도")]
+    public int maxMineralDisplay = 20;  // 변환기 광물 최대 적재량
+    public int maxResultStack    = 20;  // 수갑 스폰 지점 최대 적재량
+    public int maxMoneyStack     = 20;  // 돈 스폰 지점 최대 적재량
 
     // ── 현재 보유량 ──────────────────────────────────────────
     private int mineralCount  = 0;
@@ -52,13 +66,14 @@ public class GameManager : MonoBehaviour
     public void AddMoney(int amount)
     {
         moneyAmount += amount;
+        UIManager.instance?.UpdateMoney(moneyAmount);
         Debug.Log($"[GameManager] 돈 +{amount} / 보유: {moneyAmount}");
     }
 
-    // ── 돈 지출 ──────────────────────────────────────────────
     public void SpendMoney(int amount)
     {
         moneyAmount = Mathf.Max(0, moneyAmount - amount);
+        UIManager.instance?.UpdateMoney(moneyAmount);
         Debug.Log($"[GameManager] 돈 -{amount} / 보유: {moneyAmount}");
     }
 

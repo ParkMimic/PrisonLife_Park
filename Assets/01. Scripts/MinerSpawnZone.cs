@@ -63,37 +63,53 @@ public class MinerSpawnZone : MonoBehaviour, IInteractable
                 yield break;
             }
 
+            int remaining = spawnCost - depositedMoney;
+
+            // 필요한 금액만큼 아이템 미리 수집
+            var batch = new System.Collections.Generic.List<(MoneyItem item, int value)>();
+            int willAdd = 0;
+            while (willAdd < remaining)
+            {
+                MoneyItem moneyItem = player.ItemChain.PopMoneyItem();
+                if (moneyItem == null) break;
+                batch.Add((moneyItem, moneyItem.value));
+                willAdd += moneyItem.value;
+            }
+
+            if (batch.Count == 0)
+            {
+                yield return null;
+                continue;
+            }
+
+            // 수집한 아이템 한꺼번에 발사
+            int pending = batch.Count;
+            foreach (var (item, value) in batch)
+            {
+                var capturedItem  = item;
+                var capturedValue = value;
+                capturedItem.FlyTo(transform.position + Vector3.up * 0.5f, () =>
+                {
+                    depositedMoney += capturedValue;
+                    GameManager.instance.SpendMoney(capturedValue);
+                    Destroy(capturedItem.gameObject);
+                    UpdateUI();
+                    pending--;
+                });
+                yield return new WaitForSeconds(insertInterval);
+            }
+
+            // 마지막 아이템 도착 대기
+            yield return new WaitUntil(() => pending <= 0);
+
             // 납부 완료 → 소환
             if (depositedMoney >= spawnCost)
             {
                 depositedMoney -= spawnCost;
                 SpawnMiner();
                 UpdateUI();
-
                 if (IsMaxed()) yield break;
-                continue;
             }
-
-            // 돈 아이템 한 개 꺼내기
-            MoneyItem moneyItem = player.ItemChain.PopMoneyItem();
-            if (moneyItem == null)
-            {
-                yield return null;
-                continue;
-            }
-
-            int value = moneyItem.value;
-            Vector3 targetPos = transform.position + Vector3.up * 0.5f;
-
-            moneyItem.FlyTo(targetPos, () =>
-            {
-                depositedMoney += value;
-                GameManager.instance.SpendMoney(value);
-                Destroy(moneyItem.gameObject);
-                UpdateUI();
-            });
-
-            yield return new WaitForSeconds(insertInterval);
         }
 
         isProcessing = false;

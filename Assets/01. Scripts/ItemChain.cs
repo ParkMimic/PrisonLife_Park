@@ -16,8 +16,10 @@ public class ItemChain : MonoBehaviour
     [Header("그룹 간 간격")]
     public float groupOffset = 1.5f;
 
-    [Header("최대 개수")]
-    public int maxItemCount = 10;
+    [Header("종류별 최대 개수")]
+    public int maxMineralCount = 10;
+    public int maxResultCount  = 10;
+    public int maxMoneyCount   = 10;
 
     private List<MineralItem> mineralChain = new List<MineralItem>();
     private List<ResultItem> resultChain = new List<ResultItem>();
@@ -66,7 +68,10 @@ public class ItemChain : MonoBehaviour
         return basePos + transform.TransformDirection(new Vector3(0f, 0f, -groupOffset));
     }
 
-    public bool IsFull() => GetCount() >= maxItemCount;
+        public bool IsFull() => IsMineralFull() && IsResultFull() && IsMoneyFull();
+    public bool IsMineralFull() => mineralChain.Count >= maxMineralCount;
+    public bool IsResultFull()  => resultChain.Count  >= maxResultCount;
+    public bool IsMoneyFull()   => moneyChain.Count   >= maxMoneyCount;
 
     public int GetCount() => mineralChain.Count + resultChain.Count + moneyChain.Count;
 
@@ -102,11 +107,7 @@ public class ItemChain : MonoBehaviour
 
     public bool AddItem(MineralItem item)
     {
-        if (IsFull())
-        {
-            Destroy(item.gameObject);
-            return false;
-        }
+        if (IsMineralFull()) { Destroy(item.gameObject); return false; }
 
         if (mineralChain.Count == 0)
             groupOrder.Add("mineral");
@@ -117,11 +118,7 @@ public class ItemChain : MonoBehaviour
 
     public bool AddResultItem(ResultItem item)
     {
-        if (IsFull())
-        {
-            Debug.Log("[ItemChain] 최대 개수 초과!");
-            return false;
-        }
+        if (IsResultFull()) { Debug.Log("[ItemChain] 수갑 최대 개수 초과!"); return false; }
 
         if (resultChain.Count == 0)
             groupOrder.Add("result");
@@ -132,11 +129,7 @@ public class ItemChain : MonoBehaviour
 
     public bool AddMoneyItem(MoneyItem item)
     {
-        if (IsFull())
-        {
-            Debug.Log("[ItemChain] 최대 개수 초과!");
-            return false;
-        }
+        if (IsMoneyFull()) { Debug.Log("[ItemChain] 돈 최대 개수 초과!"); return false; }
 
         if (moneyChain.Count == 0)
             groupOrder.Add("money");

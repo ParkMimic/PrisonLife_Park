@@ -9,6 +9,7 @@ public class MoneyPickupZone : MonoBehaviour, IInteractable
     public float stackHeight = 0.3f;
     public Vector3 moneyRotation = new Vector3(90f, 0f, 0f);
 
+    // 최대 적재량은 GameManager.maxMoneyStack 에서 관리
     [Header("픽업 설정")]
     public int maxPickupCount = 4;
 
@@ -21,6 +22,8 @@ public class MoneyPickupZone : MonoBehaviour, IInteractable
 
         for (int i = 0; i < count; i++)
         {
+            if (moneyCount >= GameManager.instance.maxMoneyStack) break;
+
             Vector3 pos = basePos + Vector3.up * (stackHeight * moneyCount);
             GameObject obj = Instantiate(moneyPrefab, pos, Quaternion.Euler(moneyRotation));
 

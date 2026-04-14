@@ -624,8 +624,8 @@ GameObject:
   - component: {fileID: 2014761562141838371}
   - component: {fileID: 7731082789683118368}
   - component: {fileID: 2703751557567944048}
-  - component: {fileID: 6114242270610310793}
   - component: {fileID: 6509789903622435266}
+  - component: {fileID: 5952029236683003482}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -735,7 +735,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   joystick: {fileID: 0}
-  moveSpeed: 10
+  moveSpeed: 7
 --- !u!114 &7731082789683118368
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -769,18 +769,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   miningCooldown: 1
---- !u!114 &6114242270610310793
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4928321366623430737}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7620b35b50731f34fae76ff71d658fb4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &6509789903622435266
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -794,6 +782,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   expandedMiningTrigger: {fileID: 8309189786972109913}
+--- !u!114 &5952029236683003482
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4928321366623430737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7620b35b50731f34fae76ff71d658fb4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5016054375811249825
 GameObject:
   m_ObjectHideFlags: 0

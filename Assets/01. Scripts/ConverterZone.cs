@@ -69,6 +69,12 @@ public class ConverterZone : MonoBehaviour, IInteractable
 
         while (true)
         {
+            if (display.IsFull())
+            {
+                yield return new WaitForSeconds(insertInterval);
+                continue;
+            }
+
             if (processor.inputType == ConverterProcessor.InputType.Mineral)
             {
                 MineralItem item = itemChain.PopItem();
@@ -120,7 +126,8 @@ public class ConverterZone : MonoBehaviour, IInteractable
             // 2. 손님이 요구하는 양을 다 채울 때까지 계속 던지기 시도.
             // DeliverToCustomer가 '완료'될 때까지 기다리지 않고 내부에서 처리
 
-            if (itemChain.GetResultCount() > 0 && !customer.isSatisfied)
+            if (itemChain.GetResultCount() > 0 && customer.IsReady
+                && !GameManager.instance.prison.IsFull())
             {
                 // 아이템이 하나라도 있으면 배달 프로세스 실행
                 yield return StartCoroutine(DeliverToCustomer(itemChain, customer));
@@ -142,31 +149,29 @@ public class ConverterZone : MonoBehaviour, IInteractable
 
     IEnumerator DeliverToCustomer(ItemChain itemChain, Customer customer)
     {
-        // 플레이어가 아이템을 가지고 있고, 손님이 아직 만족하지 않았다면 계속 실행
-        while (itemChain.GetResultCount() > 0 && !customer.isSatisfied)
+        // 필요한 수량만 미리 계산해서 한꺼번에 발사
+        int needed = customer.itemsRequired - customer.currentArrivedCount - customer.pendingCount;
+        int toSend = Mathf.Min(Mathf.Min(needed, itemChain.GetResultCount()), 4);
+
+        if (toSend <= 0) yield break;
+
+        customer.pendingCount += toSend; // 발사 전 예약
+
+        for (int i = 0; i < toSend; i++)
         {
             ResultItem item = itemChain.PopResultItem();
-            if (item == null) break;
+            if (item == null) { customer.pendingCount--; continue; }
 
             Vector3 targetPos = customer.transform.position + Vector3.up * 1.5f;
-
-            // 아이템 날리기
             item.FlyTo(targetPos, () =>
             {
-                // 도착 시 실행될 콜백
+                customer.pendingCount--;
                 if (item != null) Destroy(item.gameObject);
-
-                // ★ 여기서 손님에게 아이템이 도착했음을 알림!
                 customer.AddDeliverCount(1);
-
-                // 보상(돈) 생성은 손님이 만족하는 순간에 한 번만!
                 if (customer.currentArrivedCount == customer.itemsRequired)
-                {
                     moneyPickupZone?.SpawnMoney(customer.moneyReward);
-                }
             });
 
-            // 다음 아이템 투입까지의 간격
             yield return new WaitForSeconds(insertInterval);
         }
     }

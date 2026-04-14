@@ -20,6 +20,7 @@ public class MinerAI : MonoBehaviour
     public float searchInterval  = 0.5f;   // 광물 없을 때 재탐색 간격
 
     private NavMeshAgent agent;
+    private Animator anim;
     private Mineral targetMineral;
 
     // 인스턴스 간 공유: 이미 다른 AI가 타겟팅한 광물 중복 방지
@@ -30,14 +31,19 @@ public class MinerAI : MonoBehaviour
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        anim  = GetComponent<Animator>();
+    }
+
+    private void Update()
+    {
+        anim?.SetBool("isWalking", agent.velocity.sqrMagnitude > 0.01f);
     }
 
     private void Start()
     {
-        // Inspector 미연결 시 씬에서 자동 탐색
-        if (mineralSpawner  == null) mineralSpawner  = FindFirstObjectByType<MineralSpawner>();
-        if (converterDisplay   == null) converterDisplay   = FindFirstObjectByType<ConverterDisplay>();
-        if (converterProcessor == null) converterProcessor = FindFirstObjectByType<ConverterProcessor>();
+        if (mineralSpawner     == null) mineralSpawner     = GameManager.instance.mineralSpawner;
+        if (converterDisplay   == null) converterDisplay   = GameManager.instance.converterDisplay;
+        if (converterProcessor == null) converterProcessor = GameManager.instance.converterProcessor;
 
         StartCoroutine(MiningLoop());
     }

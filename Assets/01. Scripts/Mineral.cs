@@ -36,7 +36,7 @@ public class Mineral : MonoBehaviour
         if (isBroken) return;
 
         if (spawner == null)
-            spawner = FindFirstObjectByType<MineralSpawner>();
+            spawner = GameManager.instance.mineralSpawner;
 
         if (spawner == null)
         {
@@ -62,7 +62,7 @@ public class Mineral : MonoBehaviour
         if (!IsAvailable) return;
 
         if (spawner == null)
-            spawner = FindFirstObjectByType<MineralSpawner>();
+            spawner = GameManager.instance.mineralSpawner;
 
         if (spawner == null)
         {

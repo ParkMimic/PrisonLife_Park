@@ -5,7 +5,6 @@ public class Customer : MonoBehaviour
 {
     [Header("이동 설정")]
     public float moveSpeed = 3f;
-    public float prisonMoveSpeed = 4f;
 
     [Header("거래 정보")]
     public int itemsRequired = 1;
@@ -14,11 +13,21 @@ public class Customer : MonoBehaviour
     private CustomerSpawner spawner;
     private Vector3 targetPosition;
     private bool isMoving = false;
+    private bool isWaypointMoving = false; // MoveToPosition 실행 중 Update 이동 차단
+    private Animator anim;
 
     [Header("진행 상태")]
-    public int currentArrivedCount = 0; // 현재까지 받은 아이템 수
-    public bool isSatisfied = false; // 거래 만족 여부
+    public int currentArrivedCount = 0;
+    public int pendingCount = 0; // 날아가는 중인 아이템 수 (미도착)
+    public bool isSatisfied = false;
 
+    // 줄 서기 완료 + 미만족 + 비행 중 아이템 없을 때만 true
+    public bool IsReady => !isMoving && !isSatisfied && pendingCount == 0;
+
+    private void Awake()
+    {
+        anim = GetComponent<Animator>();
+    }
 
     public void Init(CustomerSpawner spawner)
     {
@@ -33,12 +42,18 @@ public class Customer : MonoBehaviour
 
     void Update()
     {
-        if (!isMoving) return;
+        anim.SetBool("isWalking", isMoving || isWaypointMoving);
+
+        if (!isMoving || isWaypointMoving) return;
 
         transform.position = Vector3.MoveTowards(
             transform.position,
             targetPosition,
             moveSpeed * Time.deltaTime);
+
+        Vector3 dir = (targetPosition - transform.position).normalized;
+        if (dir != Vector3.zero)
+            transform.rotation = Quaternion.LookRotation(dir);
 
         if (Vector3.Distance(transform.position, targetPosition) < 0.01f)
         {
@@ -51,6 +66,7 @@ public class Customer : MonoBehaviour
     public void AddDeliverCount(int amount)
     {
         if (isSatisfied) return;
+        if (isMoving) return;  // 아직 줄 서는 중이면 수갑 수령 불가
 
         currentArrivedCount += amount;
         Debug.Log($"[Customer] 아이템 받음! 현재: {currentArrivedCount}/{itemsRequired}");
@@ -104,14 +120,16 @@ public class Customer : MonoBehaviour
 
     IEnumerator MoveToPosition(Vector3 target)
     {
+        isMoving = false;          // Update 이동 차단
+        isWaypointMoving = true;
+
         while (Vector3.Distance(transform.position, target) > 0.01f)
         {
             transform.position = Vector3.MoveTowards(
                 transform.position,
                 target,
-                prisonMoveSpeed * Time.deltaTime);
+                moveSpeed * Time.deltaTime);
 
-            // 이동 방향으로 회전
             Vector3 dir = (target - transform.position).normalized;
             if (dir != Vector3.zero)
                 transform.rotation = Quaternion.LookRotation(dir);
@@ -120,5 +138,6 @@ public class Customer : MonoBehaviour
         }
 
         transform.position = target;
+        isWaypointMoving = false;
     }
 }

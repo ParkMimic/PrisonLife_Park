@@ -19,6 +19,20 @@ public class PlayerUpgrade : MonoBehaviour
             expandedMiningTrigger.SetActive(false);
     }
 
+    // ── 채굴 모드 On/Off ─────────────────────────────────────
+
+    public void EnterMiningMode()
+    {
+        if (DrillLevel >= 2 && expandedMiningTrigger != null)
+            expandedMiningTrigger.SetActive(true);
+    }
+
+    public void ExitMiningMode()
+    {
+        if (expandedMiningTrigger != null)
+            expandedMiningTrigger.SetActive(false);
+    }
+
     /// <summary>
     /// 드릴을 한 단계 업그레이드합니다. 이미 최대 레벨이면 false 반환.
     /// </summary>
@@ -32,15 +46,21 @@ public class PlayerUpgrade : MonoBehaviour
         {
             case 1:
                 interaction.miningCooldown = 0f;
-                itemChain.maxItemCount *= 2;
-                Debug.Log($"[PlayerUpgrade] 드릴 Lv.1: 채굴 딜레이 제거 / 최대 소지 {itemChain.maxItemCount}개");
+                itemChain.maxMineralCount *= 2;
+                itemChain.maxResultCount *= 2;
+                itemChain.maxMoneyCount *= 2;
+
+
+                Debug.Log($"[PlayerUpgrade] 드릴 Lv.1: 채굴 딜레이 제거 / 모든 광물 최대 {itemChain.maxMineralCount}개");
                 break;
 
             case 2:
                 if (expandedMiningTrigger != null)
                     expandedMiningTrigger.SetActive(true);
-                itemChain.maxItemCount *= 2;
-                Debug.Log($"[PlayerUpgrade] 드릴 Lv.2: 채굴 범위 확대 / 최대 소지 {itemChain.maxItemCount}개");
+                itemChain.maxMineralCount *= 2;
+                itemChain.maxResultCount *= 2;
+                itemChain.maxMoneyCount *= 2;
+                Debug.Log($"[PlayerUpgrade] 드릴 Lv.2: 채굴 범위 확대 / 모든 광물 최대 {itemChain.maxMineralCount}개");
                 break;
         }
 
