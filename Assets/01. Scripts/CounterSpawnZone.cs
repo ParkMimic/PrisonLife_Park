@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections;
-using TMPro;
+using UnityEngine.UI;
 
 /// <summary>
 /// 플레이어가 Zone 진입 후 50원 납부 시 카운터 AI를 소환한다. (1마리)
@@ -19,8 +19,9 @@ public class CounterSpawnZone : MonoBehaviour, IInteractable
 
     [Header("World Space UI")]
     public GameObject  uiRoot;
-    public TextMeshPro titleText;
-    public TextMeshPro progressText;
+    public Text titleText;
+    public Text progressText;
+    public Slider costSlider;
 
     private int  depositedMoney = 0;
     private bool playerInZone   = false;
@@ -28,6 +29,11 @@ public class CounterSpawnZone : MonoBehaviour, IInteractable
     private bool isSpawned      = false;
 
     // ──────────────────────────────────────────────────────────
+
+    void Start()
+    {
+        if (costSlider != null) costSlider.value = 0f;
+    }
 
     public void OnPlayerEnter(PlayerInteraction player)
     {
@@ -52,6 +58,7 @@ public class CounterSpawnZone : MonoBehaviour, IInteractable
     IEnumerator ConsumeMoneyRoutine(PlayerInteraction player)
     {
         isProcessing = true;
+        PlayerAudio playerAudio = player.GetComponent<PlayerAudio>();
 
         while (playerInZone)
         {
@@ -86,6 +93,7 @@ public class CounterSpawnZone : MonoBehaviour, IInteractable
             {
                 var capturedItem  = item;
                 var capturedValue = value;
+                playerAudio?.PlayInsertSound();
                 capturedItem.FlyTo(transform.position + Vector3.up * 0.5f, () =>
                 {
                     depositedMoney += capturedValue;
@@ -136,6 +144,7 @@ public class CounterSpawnZone : MonoBehaviour, IInteractable
         }
 
         if (titleText    != null) titleText.text    = "카운터 AI 소환";
-        if (progressText != null) progressText.text = $"{depositedMoney} / {spawnCost}";
+        if (progressText != null) progressText.text = $"{spawnCost - depositedMoney}";
+        if (costSlider   != null) costSlider.value  = (float)depositedMoney / spawnCost;
     }
 }

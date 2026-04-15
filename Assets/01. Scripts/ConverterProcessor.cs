@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -17,7 +18,7 @@ public class ConverterProcessor : MonoBehaviour
     public GameObject resultPrefab;
     public Transform resultSpawnPoint;
     public float resultStackHeight = 0.5f;
-    // 최대 적재량은 GameManager.maxResultStack 에서 관리
+    public int maxCount = 20;
 
     [Header("SatisfyCustomer 설정")]
     public CustomerSpawner customerSpawner;
@@ -25,11 +26,19 @@ public class ConverterProcessor : MonoBehaviour
     [Header("참조 - Inspector에서 직접 연결")]
     public ConverterDisplay display;
 
+    [Header("UI")]
+    public Text fullText;
+
     private int storedCount = 0;
     private bool isConverting = false;
 
     // 현재 스폰 지점에 있는 아이템 목록 (픽업되면 제거됨)
     private List<ResultItem> spawnedItems = new List<ResultItem>();
+
+    void Start()
+    {
+        if (fullText != null) fullText.gameObject.SetActive(false);
+    }
 
     void Update()
     {
@@ -88,7 +97,7 @@ public class ConverterProcessor : MonoBehaviour
 
         spawnedItems.RemoveAll(item => item == null);
 
-        if (spawnedItems.Count >= GameManager.instance.maxResultStack) return;
+        if (spawnedItems.Count >= maxCount) return;
 
         Vector3 spawnPos = resultSpawnPoint.position
             + Vector3.up * (resultStackHeight * spawnedItems.Count);
@@ -100,9 +109,10 @@ public class ConverterProcessor : MonoBehaviour
         {
             // 픽업 시 리스트에서 제거 → 나머지 아이템 위치 자동 갱신
             spawnedItems.Add(ri);
-            ri.onPickedUp = () => spawnedItems.Remove(ri);
+            ri.onPickedUp = () => { spawnedItems.Remove(ri); UpdateFullUI(); };
         }
 
+        UpdateFullUI();
         Debug.Log($"[Processor] 결과물 생성! 스폰 지점 대기 중: {spawnedItems.Count}개");
     }
 
@@ -127,6 +137,13 @@ public class ConverterProcessor : MonoBehaviour
     }
 
     // ─────────────────────────────────────────────────────────
+
+    bool IsFull() => spawnedItems.Count >= maxCount;
+
+    void UpdateFullUI()
+    {
+        if (fullText != null) fullText.gameObject.SetActive(IsFull());
+    }
 
     void SatisfyCustomer()
     {

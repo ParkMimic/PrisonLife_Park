@@ -14,17 +14,13 @@ public class GameManager : MonoBehaviour
     public MoneyPickupZone   moneyPickupZone;
     public Prison            prison;
 
-    // ── 적재 한도 ────────────────────────────────────────────
-    [Header("적재 한도")]
-    public int maxMineralDisplay = 20;  // 변환기 광물 최대 적재량
-    public int maxResultStack    = 20;  // 수갑 스폰 지점 최대 적재량
-    public int maxMoneyStack     = 20;  // 돈 스폰 지점 최대 적재량
-
     // ── 현재 보유량 ──────────────────────────────────────────
     private int mineralCount  = 0;
     private int handcuffCount = 0;
     private int moneyAmount   = 0;
     private int prisonerCount = 0;
+
+    private bool firstMoneyTriggered = false;
 
     public int MineralCount  => mineralCount;
     public int HandcuffCount => handcuffCount;
@@ -68,6 +64,12 @@ public class GameManager : MonoBehaviour
         moneyAmount += amount;
         UIManager.instance?.UpdateMoney(moneyAmount);
         Debug.Log($"[GameManager] 돈 +{amount} / 보유: {moneyAmount}");
+
+        if (!firstMoneyTriggered)
+        {
+            firstMoneyTriggered = true;
+            EventManager.instance?.TriggerFirstMoneyEvent();
+        }
     }
 
     public void SpendMoney(int amount)

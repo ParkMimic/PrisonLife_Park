@@ -46,6 +46,8 @@ public class Mineral : MonoBehaviour
 
         isBroken = true;
 
+        playerTransform?.GetComponent<PlayerAudio>()?.PlayMiningSound();
+
         if (itemPrefab != null)
         {
             GameObject item = Instantiate(itemPrefab, transform.position, Quaternion.identity);

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class Customer : MonoBehaviour
@@ -21,12 +22,34 @@ public class Customer : MonoBehaviour
     public int pendingCount = 0; // 날아가는 중인 아이템 수 (미도착)
     public bool isSatisfied = false;
 
+    [Header("UI")]
+    public Canvas uiCanvas;
+    public Text requireText;
+    public Slider handcuffSlider;
+    public float sliderFillSpeed = 5f;
+
+    private float currentSliderValue = 0f;
+
     // 줄 서기 완료 + 미만족 + 비행 중 아이템 없을 때만 true
     public bool IsReady => !isMoving && !isSatisfied && pendingCount == 0;
 
     private void Awake()
     {
         anim = GetComponent<Animator>();
+
+        if (uiCanvas != null)
+        {
+            uiCanvas.gameObject.SetActive(false);
+            if (uiCanvas.GetComponent<BillboardUI>() == null)
+                uiCanvas.gameObject.AddComponent<BillboardUI>();
+        }
+        if (requireText    != null) requireText.text = $"{itemsRequired}";
+        if (handcuffSlider != null)
+        {
+            handcuffSlider.minValue = 0f;
+            handcuffSlider.maxValue = 1f;
+            handcuffSlider.value    = 0f;
+        }
     }
 
     public void Init(CustomerSpawner spawner)
@@ -43,6 +66,7 @@ public class Customer : MonoBehaviour
     void Update()
     {
         anim.SetBool("isWalking", isMoving || isWaypointMoving);
+        UpdateUI();
 
         if (!isMoving || isWaypointMoving) return;
 
@@ -59,6 +83,21 @@ public class Customer : MonoBehaviour
         {
             transform.position = targetPosition;
             isMoving = false;
+        }
+    }
+
+    void UpdateUI()
+    {
+        if (uiCanvas == null) return;
+
+        bool show = !isMoving && !isSatisfied && spawner != null && spawner.GetFirstCustomer() == this;
+        uiCanvas.gameObject.SetActive(show);
+
+        if (show && handcuffSlider != null)
+        {
+            float target = (float)(currentArrivedCount + pendingCount) / itemsRequired;
+            currentSliderValue = Mathf.Lerp(currentSliderValue, target, Time.deltaTime * sliderFillSpeed);
+            handcuffSlider.value = currentSliderValue;
         }
     }
 

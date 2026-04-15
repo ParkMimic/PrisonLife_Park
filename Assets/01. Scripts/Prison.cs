@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 
 public class Prison : MonoBehaviour
@@ -15,7 +16,18 @@ public class Prison : MonoBehaviour
     [Header("정렬 방향")]
     public Vector3 prisonerFacing = Vector3.forward; // 수감된 죄수가 바라볼 방향
 
+    [Header("UI")]
+    public Text countText;
+    public Color normalColor = Color.white;
+    public Color fullColor   = Color.red;
+
     private List<Customer> prisoners = new List<Customer>();
+    private bool prisonFullTriggered = false;
+
+    void Start()
+    {
+        UpdateUI();
+    }
 
     public bool IsFull() => prisoners.Count >= maxCapacity;
 
@@ -46,6 +58,20 @@ public class Prison : MonoBehaviour
         if (prisonerFacing != Vector3.zero)
             customer.transform.rotation = Quaternion.LookRotation(prisonerFacing);
 
+        if (!prisonFullTriggered && IsFull())
+        {
+            prisonFullTriggered = true;
+            EventManager.instance?.TriggerPrisonFullEvent();
+        }
+
+        UpdateUI();
         Debug.Log($"[Prison] 수감 완료! 현재 {prisoners.Count}명");
+    }
+
+    void UpdateUI()
+    {
+        if (countText == null) return;
+        countText.text  = $"{prisoners.Count} / {maxCapacity}";
+        countText.color = IsFull() ? fullColor : normalColor;
     }
 }

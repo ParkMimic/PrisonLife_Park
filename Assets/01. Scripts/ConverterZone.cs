@@ -32,7 +32,7 @@ public class ConverterZone : MonoBehaviour, IInteractable
                 break;
             case ZoneMode.Counter:
                 playerInZone = true;
-                if (!isProcessing) StartCoroutine(CounterRoutine(player.ItemChain));
+                if (!isProcessing) StartCoroutine(CounterRoutine(player));
                 break;
         }
     }
@@ -60,12 +60,14 @@ public class ConverterZone : MonoBehaviour, IInteractable
             return;
         }
 
-        StartCoroutine(ConverterRoutine(player.ItemChain));
+        StartCoroutine(ConverterRoutine(player));
     }
 
-    IEnumerator ConverterRoutine(ItemChain itemChain)
+    IEnumerator ConverterRoutine(PlayerInteraction player)
     {
         isProcessing = true;
+        ItemChain itemChain   = player.ItemChain;
+        PlayerAudio playerAudio = player.GetComponent<PlayerAudio>();
 
         while (true)
         {
@@ -81,6 +83,7 @@ public class ConverterZone : MonoBehaviour, IInteractable
                 if (item == null) break;
 
                 Vector3 targetPos = display.GetNextPosition();
+                playerAudio?.PlayInsertSound();
                 item.FlyTo(targetPos, () =>
                 {
                     display.AddMineral(item.gameObject);
@@ -93,6 +96,7 @@ public class ConverterZone : MonoBehaviour, IInteractable
                 if (item == null) break;
 
                 Vector3 targetPos = display.GetNextPosition();
+                playerAudio?.PlayInsertSound();
                 item.FlyTo(targetPos, () =>
                 {
                     display.AddMineral(item.gameObject);
@@ -108,9 +112,11 @@ public class ConverterZone : MonoBehaviour, IInteractable
 
     // ── Counter ──────────────────────────────────────────────────
 
-    IEnumerator CounterRoutine(ItemChain itemChain)
+    IEnumerator CounterRoutine(PlayerInteraction player)
     {
         isProcessing = true;
+        ItemChain itemChain     = player.ItemChain;
+        PlayerAudio playerAudio = player.GetComponent<PlayerAudio>();
 
         while (playerInZone)
         {
@@ -130,7 +136,7 @@ public class ConverterZone : MonoBehaviour, IInteractable
                 && !GameManager.instance.prison.IsFull())
             {
                 // 아이템이 하나라도 있으면 배달 프로세스 실행
-                yield return StartCoroutine(DeliverToCustomer(itemChain, customer));
+                yield return StartCoroutine(DeliverToCustomer(itemChain, playerAudio, customer));
 
                 // 손님이 만족했다면 다음 손님을 위한 딜레이
                 if (customer.isSatisfied)
@@ -147,7 +153,7 @@ public class ConverterZone : MonoBehaviour, IInteractable
         isProcessing = false;
     }
 
-    IEnumerator DeliverToCustomer(ItemChain itemChain, Customer customer)
+    IEnumerator DeliverToCustomer(ItemChain itemChain, PlayerAudio playerAudio, Customer customer)
     {
         // 필요한 수량만 미리 계산해서 한꺼번에 발사
         int needed = customer.itemsRequired - customer.currentArrivedCount - customer.pendingCount;
@@ -163,6 +169,7 @@ public class ConverterZone : MonoBehaviour, IInteractable
             if (item == null) { customer.pendingCount--; continue; }
 
             Vector3 targetPos = customer.transform.position + Vector3.up * 1.5f;
+            playerAudio?.PlayInsertSound();
             item.FlyTo(targetPos, () =>
             {
                 customer.pendingCount--;

@@ -4,6 +4,12 @@ public class PlayerUpgrade : MonoBehaviour
 {
     public int DrillLevel { get; private set; } = 0;
 
+    [Header("레벨 0: 기본 드릴 오브젝트 (기본 활성 상태로 배치)")]
+    public GameObject drillLv0;
+
+    [Header("레벨 1: 업그레이드 드릴 오브젝트 (비활성 상태로 배치)")]
+    public GameObject drillLv1;
+
     [Header("레벨 2: 확장 채굴 트리거 오브젝트 (비활성 상태로 배치)")]
     public GameObject expandedMiningTrigger;
 
@@ -15,22 +21,28 @@ public class PlayerUpgrade : MonoBehaviour
         interaction = GetComponent<PlayerInteraction>();
         itemChain   = GetComponent<ItemChain>();
 
-        if (expandedMiningTrigger != null)
-            expandedMiningTrigger.SetActive(false);
+        if (drillLv1             != null) drillLv1.SetActive(false);
+        if (expandedMiningTrigger != null) expandedMiningTrigger.SetActive(false);
     }
 
     // ── 채굴 모드 On/Off ─────────────────────────────────────
 
     public void EnterMiningMode()
     {
+        if (DrillLevel == 0 && drillLv0 != null)
+            drillLv0.SetActive(true);
+        else if (DrillLevel == 1 && drillLv1 != null)
+            drillLv1.SetActive(true);
+
         if (DrillLevel >= 2 && expandedMiningTrigger != null)
             expandedMiningTrigger.SetActive(true);
     }
 
     public void ExitMiningMode()
     {
-        if (expandedMiningTrigger != null)
-            expandedMiningTrigger.SetActive(false);
+        if (drillLv0 != null) drillLv0.SetActive(false);
+        if (drillLv1 != null) drillLv1.SetActive(false);
+        if (expandedMiningTrigger != null) expandedMiningTrigger.SetActive(false);
     }
 
     /// <summary>
@@ -50,13 +62,11 @@ public class PlayerUpgrade : MonoBehaviour
                 itemChain.maxResultCount *= 2;
                 itemChain.maxMoneyCount *= 2;
 
-
+                EventManager.instance?.TriggerFirstDrillUpgradeEvent();
                 Debug.Log($"[PlayerUpgrade] 드릴 Lv.1: 채굴 딜레이 제거 / 모든 광물 최대 {itemChain.maxMineralCount}개");
                 break;
 
             case 2:
-                if (expandedMiningTrigger != null)
-                    expandedMiningTrigger.SetActive(true);
                 itemChain.maxMineralCount *= 2;
                 itemChain.maxResultCount *= 2;
                 itemChain.maxMoneyCount *= 2;

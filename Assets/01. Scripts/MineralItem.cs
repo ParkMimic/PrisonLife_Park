@@ -7,20 +7,16 @@ public class MineralItem : MonoBehaviour
     public float flyDuration = 0.4f;
     public float arcHeight = 2.0f;
 
-    private bool isInitialized = false; 
-
     public void Init(Transform playerTransform)
     {
-        ItemChain chain = playerTransform.GetComponent <ItemChain>();
+        ItemChain chain = playerTransform.GetComponent<ItemChain>();
 
         if (!chain.AddItem(this)) return;
         GameManager.instance.AddMineral();
-        isInitialized = true;
     }
 
     public void FlyTo(Vector3 targetPos, System.Action onComplete)
     {
-        isInitialized = false;
         StartCoroutine(FlyRoutine(targetPos, onComplete));
     }
 

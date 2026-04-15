@@ -6,7 +6,7 @@ public class MoneyItem : MonoBehaviour
     [Header("설정")]
     public float flyDuration = 0.3f;
     public float arcHeight = 1.5f;
-    public int value = 5;
+    public int value = 10;
 
     public void Init(Transform playerTransform)
     {

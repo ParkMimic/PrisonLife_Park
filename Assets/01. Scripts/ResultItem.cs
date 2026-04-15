@@ -21,14 +21,21 @@ public class ResultItem : MonoBehaviour
 
     public void Init(Transform playerTransform)
     {
+        if (isInitialized) return;  // 이미 픽업 처리 중이거나 완료된 아이템 재호출 방지
+
         ItemChain chain = playerTransform.GetComponent<ItemChain>();
 
         isInitialized = true;
-        onPickedUp?.Invoke();   // 스폰 지점 리스트에서 제거 요청
-        onPickedUp = null;
 
         Vector3 targetPos = chain.GetNextStackPosition();
-        if (!chain.AddResultItem(this)) return;
+        if (!chain.AddResultItem(this))
+        {
+            isInitialized = false;  // 실패 시 다시 픽업 가능하게 복구
+            return;
+        }
+
+        onPickedUp?.Invoke();   // 체인 추가 성공 후에만 스폰 지점 리스트에서 제거
+        onPickedUp = null;
         GameManager.instance.AddHandcuff();
         StartCoroutine(FlyRoutine(targetPos));
     }

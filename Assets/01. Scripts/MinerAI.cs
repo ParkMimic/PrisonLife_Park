@@ -19,8 +19,13 @@ public class MinerAI : MonoBehaviour
     public float miningDelay     = 0.5f;   // 채굴 선딜레이
     public float searchInterval  = 0.5f;   // 광물 없을 때 재탐색 간격
 
+    [Header("사운드")]
+    public AudioClip miningClip;
+    [Range(0f, 1f)] public float volume = 1f;
+
     private NavMeshAgent agent;
     private Animator anim;
+    private AudioSource audioSource;
     private Mineral targetMineral;
 
     // 인스턴스 간 공유: 이미 다른 AI가 타겟팅한 광물 중복 방지
@@ -30,8 +35,9 @@ public class MinerAI : MonoBehaviour
 
     private void Awake()
     {
-        agent = GetComponent<NavMeshAgent>();
-        anim  = GetComponent<Animator>();
+        agent       = GetComponent<NavMeshAgent>();
+        anim        = GetComponent<Animator>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     private void Update()
@@ -88,10 +94,17 @@ public class MinerAI : MonoBehaviour
 
             agent.isStopped = true;
 
-            // 3. 채굴
+            // 3. 변환기가 꽉 찼으면 빌 때까지 대기
+            while (converterDisplay != null && converterDisplay.IsFull())
+                yield return new WaitForSeconds(searchInterval);
+
+            // 4. 채굴
             if (targetMineral != null && targetMineral.IsAvailable)
             {
                 yield return new WaitForSeconds(miningDelay);
+
+                if (audioSource != null && miningClip != null)
+                    audioSource.PlayOneShot(miningClip, volume);
 
                 targetMineral.BreakByAI(item =>
                 {

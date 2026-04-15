@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections;
-using TMPro;
+using UnityEngine.UI;
 
 public class DrillUpgradeZone : MonoBehaviour, IInteractable
 {
@@ -13,8 +13,9 @@ public class DrillUpgradeZone : MonoBehaviour, IInteractable
 
     [Header("World Space UI")]
     public GameObject uiRoot;
-    public TextMeshPro titleText;
-    public TextMeshPro progressText;
+    public Text titleText;
+    public Text progressText;
+    public Slider costSlider;
 
     // 누적 납부 금액 (Zone을 나갔다 들어와도 유지)
     private int depositedMoney = 0;
@@ -24,6 +25,11 @@ public class DrillUpgradeZone : MonoBehaviour, IInteractable
     private PlayerUpgrade targetUpgrade;
 
     // ──────────────────────────────────────────────────────────
+
+    void Start()
+    {
+        if (costSlider != null) costSlider.value = 0f;
+    }
 
     public void OnPlayerEnter(PlayerInteraction player)
     {
@@ -53,6 +59,7 @@ public class DrillUpgradeZone : MonoBehaviour, IInteractable
     IEnumerator ConsumeMoneyRoutine(PlayerInteraction player)
     {
         isProcessing = true;
+        PlayerAudio playerAudio = player.GetComponent<PlayerAudio>();
 
         while (playerInZone)
         {
@@ -88,6 +95,7 @@ public class DrillUpgradeZone : MonoBehaviour, IInteractable
             {
                 var capturedItem  = item;
                 var capturedValue = value;
+                playerAudio?.PlayInsertSound();
                 capturedItem.FlyTo(transform.position + Vector3.up * 0.5f, () =>
                 {
                     depositedMoney += capturedValue;
@@ -142,7 +150,7 @@ public class DrillUpgradeZone : MonoBehaviour, IInteractable
         if (titleText != null)
             titleText.text = $"드릴 Lv.{nextLevel} 업그레이드";
 
-        if (progressText != null)
-            progressText.text = $"{depositedMoney} / {cost}";
+        if (progressText != null) progressText.text = $"{cost - depositedMoney}";
+        if (costSlider   != null) costSlider.value  = (float)depositedMoney / cost;
     }
 }

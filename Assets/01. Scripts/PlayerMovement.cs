@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("ø°º¬ ¡∂¿ÃΩ∫∆Ω ø¨∞·")]
+    [Header("Ïù¥Îèô Ï°∞Ïù¥Ïä§Ìã± ÏÑ§Ï†ï")]
     public Joystick joystick;
     public float moveSpeed;
 
@@ -21,33 +21,37 @@ public class PlayerMovement : MonoBehaviour
         mainCam = Camera.main;
     }
 
+    public bool controllable = true;
+
     private void FixedUpdate()
     {
+        if (!controllable)
+        {
+            anim.SetFloat("speed", 0f);
+            return;
+        }
+
         float h = joystick.Horizontal;
         float v = joystick.Vertical;
 
         if (Mathf.Abs(h) < 0.01f && Mathf.Abs(v) < 0.01f)
         {
-            anim.SetFloat("speed", 0f); // ¡∂¿ÃΩ∫∆Ω¿Ã ∞≈¿« ¡ﬂæ”ø° ¿÷¿ª ∂ß æ÷¥œ∏ﬁ¿Ãº« º”µµ∏¶ 0¿∏∑Œ º≥¡§
+            anim.SetFloat("speed", 0f);
             return;
         }
-        // ƒ´∏ﬁ∂Û¿« forward/right∏¶ ±‚¡ÿ¿∏∑Œ πÊ«‚ ∞ËªÍ
         Vector3 camForward = mainCam.transform.forward;
         Vector3 camRight = mainCam.transform.right;
 
-        // Y√‡ º∫∫– ¡¶∞≈
+
         camForward.y = 0f;
         camRight.y = 0f;
         camForward.Normalize();
         camRight.Normalize();
 
-        // ¡∂¿ÃΩ∫∆Ω ¿‘∑¬¿ª ƒ´∏ﬁ∂Û ±‚¡ÿ ø˘µÂ πÊ«‚¿∏∑Œ ¿¸»Ø
         Vector3 moveDir = camForward * v + camRight * h;
 
-        // ¿Ãµø
         rigid.MovePosition(rigid.position + moveDir * moveSpeed * Time.fixedDeltaTime);
 
-        // ¿Ãµø πÊ«‚¿∏∑Œ ƒ≥∏Ø≈Õ »∏¿¸
         transform.rotation = Quaternion.LookRotation(moveDir);
 
         anim.SetFloat("speed", moveDir.magnitude);

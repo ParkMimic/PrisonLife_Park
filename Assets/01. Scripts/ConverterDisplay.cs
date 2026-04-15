@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 
 public class ConverterDisplay : MonoBehaviour
@@ -8,16 +9,23 @@ public class ConverterDisplay : MonoBehaviour
     public Transform displayBase;
     public float columnOffset = 0.4f;
     public float rowHeight = 0.4f;
+    public int maxCount = 20;
 
     [Header("아이템 회전 설정")]
     public Vector3 mineralRotation = new Vector3(0f, 0f, 90f);
 
-    // 최대 적재량은 GameManager.maxMineralDisplay 에서 관리
-
     [Header("위치 갱신 속도")]
     public float repositionSpeed = 10f;
 
+    [Header("UI")]
+    public Text fullText;
+
     private List<GameObject> displayItems = new List<GameObject>();
+
+    void Start()
+    {
+        if (fullText != null) fullText.gameObject.SetActive(false);
+    }
 
     void Update()
     {
@@ -49,13 +57,16 @@ public class ConverterDisplay : MonoBehaviour
         return GetPositionByIndex(displayItems.Count);
     }
 
-    public bool IsFull() => displayItems.Count >= GameManager.instance.maxMineralDisplay;
+    public bool IsFull() => displayItems.Count >= maxCount;
 
-    // 날아온 오브젝트를 디스플레이에 등록
-    public void AddMineral(GameObject obj)
+    // 날아온 오브젝트를 디스플레이에 등록. 꽉 찼으면 파괴하고 false 반환.
+    public bool AddMineral(GameObject obj)
     {
+        if (IsFull()) { Destroy(obj); return false; }
         obj.transform.rotation = Quaternion.Euler(mineralRotation);
         displayItems.Add(obj);
+        UpdateFullUI();
+        return true;
     }
 
     // 변환 시 뒤(상단)에서부터 count개 제거
@@ -69,6 +80,13 @@ public class ConverterDisplay : MonoBehaviour
             Destroy(displayItems[lastIndex]);
             displayItems.RemoveAt(lastIndex);
         }
+
+        UpdateFullUI();
+    }
+
+    void UpdateFullUI()
+    {
+        if (fullText != null) fullText.gameObject.SetActive(IsFull());
     }
 
     public void ClearDisplay()
